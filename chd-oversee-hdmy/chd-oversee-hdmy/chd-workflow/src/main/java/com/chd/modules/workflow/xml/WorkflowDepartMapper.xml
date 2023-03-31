@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.workflow.mapper.WorkflowDepartMapper">
+
+    <resultMap id="org2DepartMap" type="com.chd.modules.workflow.entity.WorkflowDepart" >
+        <result column="org_id" property="departId" />
+        <result column="org_name" property="departName" />
+    </resultMap>
+    <select id="manageUsersByDepartIds" parameterType="list" resultType="com.chd.modules.workflow.vo.WorkflowUserVo">
+        select t3.user_id as id,t3.user_name as name
+        from my_org t2
+        left join my_user t3 on t2.manager_id =t3.user_id
+        where t2.org_id in
+        <foreach collection="list" item="id" separator="," open="(" close=")" >
+            #{id}
+        </foreach>
+        order by t3.user_name asc
+    </select>
+
+    <select id="manageUsersByDepartId" parameterType="String" resultType="com.chd.modules.workflow.vo.WorkflowUserVo">
+        select t3.user_id as id,t3.user_name as name
+            from my_org t2
+        left join my_user t3 on t2.manager_id =t3.user_id
+        where t2.org_id =#{departId}
+        order by t3.user_name asc
+    </select>
+
+    <select id="supervisorUsersByDepartIds" parameterType="list" resultType="com.chd.modules.workflow.vo.WorkflowUserVo">
+        select t3.user_id as id,t3.user_name as name
+        from my_org t2
+        left join my_user t3 on t2.upper_supervisor_id =t3.user_id
+        where t2.org_id in
+        <foreach collection="list" item="id" separator="," open="(" close=")" >
+            #{id}
+        </foreach>
+        order by t3.user_name asc
+    </select>
+
+    <select id="supervisorUsersByDepartId" parameterType="String" resultType="com.chd.modules.workflow.vo.WorkflowUserVo">
+        select t3.user_id as id,t3.user_name as name
+            from my_org t2
+        left join my_user t3 on t2.upper_supervisor_id =t3.user_id
+        where t2.org_id =#{departId}
+        order by t3.user_name asc
+    </select>
+
+    <select id="userDepartVariablesValue" parameterType="String" resultType="String">
+        select t1.id  from chd_workflow_depart t1
+        left join my_org t2 on t1.depart_id =t2.org_id
+        where (t1.`role` ='MANAGER' and t2.manager_id =#{userId}) OR (t1.`role` ='SUPERVISOR' and t2.upper_supervisor_id =#{userId})
+    </select>
+
+    <select id="departListByIds"  parameterType="list" resultType="com.chd.modules.workflow.entity.WorkflowDepart">
+        select t2.org_name as depart_name,t1.* from chd_workflow_depart t1 left join my_org t2 on t1.depart_id=t2.org_id
+        where t1.id in
+        <foreach collection="list" item="id" separator="," open="(" close=")" >
+            #{id}
+        </foreach>
+    </select>
+
+
+
+    <insert id="insertDepart" parameterType="com.chd.modules.workflow.entity.WorkflowDepart" >
+        INSERT INTO chd_workflow_depart
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null and id !='' ">id,</if>
+            <if test="departId != null and departId !='' ">depart_id,</if>
+            <if test="role != null and role !='' ">role,</if>
+            <if test="createBy != null and createBy !='' ">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null and updateBy !='' ">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null and id !='' ">#{id},</if>
+            <if test="departId != null and departId !='' ">#{departId},</if>
+            <if test="role != null and role !='' ">#{role},</if>
+            <if test="createBy != null and createBy !='' ">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null and updateBy !='' ">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <select id="findDepart" parameterType="com.chd.modules.workflow.entity.WorkflowDepart" resultType="com.chd.modules.workflow.entity.WorkflowDepart">
+        SELECT t2.org_name as depart_name,t1.*
+        FROM  chd_workflow_depart t1
+        left join my_org t2 on t1.depart_id=t2.org_id
+        <where>
+            <if test="id != null and id !='' "> and t1.id = #{id} </if>
+            <if test="departId != null and departId !='' "> and t1.depart_id = #{departId} </if>
+            <if test="role != null and role !='' "> and t1.role = #{role} </if>
+            <if test="departName != null and departName !='' "> and t2.org_name = #{departName} </if>
+        </where>
+    </select>
+
+    <select id="findOrgById" parameterType="string" resultType="com.chd.modules.workflow.entity.WorkflowDepart">
+        SELECT t1.org_id as depart_id,t1.org_name as depart_name FROM  my_org t1 where t1.org_id=#{departId}
+
+    </select>
+    <select id="findHasUserDepartByIds" parameterType="string" resultMap="org2DepartMap">
+        SELECT t1.org_id ,t1.org_name,t1.manager_id ,t1.upper_supervisor_id
+        FROM  my_org t1 where find_in_set(t1.org_id,#{departId}) and t1.manager_id is not null and t1.upper_supervisor_id is not null
+
+    </select>
+
+
+    <select id="getWorkflowDepartList" resultType="com.chd.modules.workflow.entity.WorkflowDepart">
+        SELECT cwd.*
+        FROM chd_workflow_depart cwd
+        <where>
+            <if test="map.id != null and map.id !='' "> and cwd.id = #{map.id} </if>
+            <if test="map.departId != null and map.departId !='' "> and cwd.depart_id = #{map.departId} </if>
+            <if test="map.role != null and map.role !='' "> and cwd.role = #{map.role} </if>
+        </where>
+
+
+    </select>
+
+
+
+
+</mapper>

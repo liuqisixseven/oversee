@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.oversee.issue.mapper.OverseeUserSignatureMapper">
+
+    <resultMap id="overseeUserSignatureMap" type="com.chd.modules.oversee.issue.entity.OverseeUserSignature" >
+        <result column="id" property="id" />
+        <result column="user_id" property="userId" />
+        <result column="signature_data" property="signatureData" typeHandler="com.chd.common.handler.BlobTypeHandler" />
+        <result column="create_by" property="createBy" />
+        <result column="create_time" property="createTime" />
+        <result column="update_by" property="updateBy" />
+        <result column="update_time" property="updateTime" />
+
+    </resultMap>
+
+    <insert id="insert" parameterType="com.chd.modules.oversee.issue.entity.OverseeUserSignature"   keyProperty="id"  useGeneratedKeys="true"  >
+        INSERT INTO oversee_user_signature (  user_id, signature_data, create_by, create_time, update_by, update_time ) VALUES
+            (#{userId} ,#{signatureData,typeHandler=com.chd.common.handler.BlobTypeHandler} ,#{createBy} ,#{createTime} ,#{updateBy} ,#{updateTime} )
+    </insert>
+
+
+
+    <select id="selectListPage" parameterType="com.chd.modules.oversee.issue.entity.OverseeUserSignatureQueryVo" resultMap="overseeUserSignatureMap">
+        SELECT * FROM  oversee_user_signature
+        <where>
+            <if test="id != null"> and id = #{id} </if>
+            <if test="userId != null and userId !='' "> and user_id = #{userId} </if>
+            <if test="signatureData != null and signatureData !='' "> and signature_data = #{signatureData,typeHandler=com.chd.common.handler.BlobTypeHandler} </if>
+            <if test="createBy != null and createBy !='' "> and create_by = #{createBy} </if>
+            <if test="createTime != null"> and create_time = #{createTime} </if>
+            <if test="updateBy != null and updateBy !='' "> and update_by = #{updateBy} </if>
+            <if test="updateTime != null"> and update_time = #{updateTime} </if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <update id="updateById" parameterType="com.chd.modules.oversee.issue.entity.OverseeUserSignature">
+        UPDATE oversee_user_signature
+        <set>
+            <if test="userId != null and userId !='' "> user_id = #{userId}, </if>
+            <if test="signatureData != null and signatureData !='' "> signature_data = #{signatureData,typeHandler=com.chd.common.handler.BlobTypeHandler}, </if>
+            <if test="createBy != null and createBy !='' "> create_by = #{createBy}, </if>
+            <if test="createTime != null"> create_time = #{createTime}, </if>
+            <if test="updateBy != null and updateBy !='' "> update_by = #{updateBy}, </if>
+            <if test="updateTime != null"> update_time = #{updateTime}, </if>
+
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <delete id="deleteById" parameterType="Long">
+        DELETE FROM oversee_user_signature WHERE id = #{id}
+    </delete>
+
+    <select id="findById" parameterType="Long" resultMap="overseeUserSignatureMap">
+        SELECT * FROM oversee_user_signature WHERE id = #{id}
+    </select>
+
+    <select id="findByUserId" parameterType="String" resultMap="overseeUserSignatureMap">
+        SELECT * FROM oversee_user_signature WHERE user_id = #{userId}
+    </select>
+
+    <select id="findByIdList" parameterType="list" resultMap="overseeUserSignatureMap">
+        SELECT * FROM oversee_user_signature WHERE id in
+        <foreach collection="list" item="id" separator="," open="(" close=")" >
+            #{id}
+        </foreach>
+    </select>
+
+    <delete id="deleteBatchById" parameterType="list">
+        DELETE FROM oversee_user_signature WHERE id in
+        <foreach collection="list" item="id" separator="," open="(" close=")" >
+            #{id}
+        </foreach>
+    </delete>
+
+
+</mapper>

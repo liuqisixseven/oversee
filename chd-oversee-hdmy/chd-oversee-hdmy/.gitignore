@@ -1,0 +1,57 @@
+######################################################################
+# Build Tools
+node_modules
+.gradle
+/build/
+!gradle/wrapper/gradle-wrapper.jar
+rebel.xml
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+######################################################################
+# IDE
+
+#vscode
+.vscode
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.svn
+target
+### IntelliJ IDEA ###
+.idea
+.svn
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+nbproject/private/
+build/*
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+######################################################################
+# Others
+*.log
+*.xml.versionsBackup
+*.swp
+
+!*/build/*.java
+!*/build/*.html
+!*/build/*.xml
+
+.DS_Store
+doc-api.md
+application-flowable.yml
+application-ljc.yml
+chd-flowable
+chd-idm
+logs

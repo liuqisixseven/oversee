@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.oversee.issue.mapper.OverseeIssueMapper">
+
+    <select id="selectOverseeIssuePageVo" parameterType="map" resultType="com.chd.modules.oversee.issue.entity.OverseeIssue">
+        SELECT oi.*
+        <if test="map.getIssueCategoryName!= null ">
+            ,(SELECT name FROM oversee_issue_category oic WHERE oic.id = oi.issue_category_id) issueCategoryName,
+        </if>
+        <if test="map.getSpecificIssuesContent!= null ">
+            ,si.specific_issues_content specificIssuesContent
+        </if>
+        <if test="map.getCreateUserRealName!= null ">
+            ,(SELECT realname FROM sys_user su WHERE su.id = oi.create_user_id) createUserRealName
+        </if>
+        <if test="map.getUpdateUserRealName!= null ">
+            ,(SELECT realname FROM sys_user su WHERE su.id = oi.update_user_id) updateUserRealName
+        </if>
+        FROM oversee_issue oi
+        <if test="map.getSpecificIssuesContent!= null ">
+            LEFT JOIN specific_issues si ON si.issue_id = oi.id
+        </if>
+        WHERE oi.data_type = 1
+        <if test="map.id!= null "> and oi.id = #{map.id}</if>
+        <if test="map.num!= null "> and oi.num LIKE #{map.num}</if>
+        <if test="map.title!= null "> and oi.title LIKE #{map.title}</if>
+        <if test="map.subtitle!= null "> and oi.subtitle LIKE #{map.subtitle}</if>
+        <if test="map.submitState!= null "> and oi.submit_state = #{map.submitState}</if>
+        <if test="map.approvalBody!= null "> and oi.approval_body = #{map.approvalBody}</if>
+        <if test="map.source!= null "> and oi.source = #{map.source}</if>
+        <if test="map.isCompanyLeadershipReview!= null "> and oi.is_company_leadership_review = #{map.isCompanyLeadershipReview}</if>
+        <if test="map.headquartersLeadDepartmentOrgId!= null "> and oi.headquarters_lead_department_org_id = #{map.headquartersLeadDepartmentOrgId}</if>
+        <if test="map.headquartersLeadDepartmentManagerUserId!= null "> and oi.headquarters_lead_department_manager_user_id = #{map.headquartersLeadDepartmentManagerUserId}</if>
+        <if test="map.responsibleUnitOrgId!= null "> and oi.responsible_unit_org_id = #{map.responsibleUnitOrgId}</if>
+        <if test="map.responsibleLeadDepartmentOrgId!= null "> and oi.responsible_lead_department_org_id = #{map.responsibleLeadDepartmentOrgId}</if>
+        <if test="map.is_supervise!= null "> and oi.is_supervise = #{map.is_supervise}</if>
+        <if test="map.supervisorOrgIds!= null "> and oi.supervisor_org_ids = #{map.supervisorOrgIds}</if>
+        <if test="map.supervisorOrgId!= null "> and FIND_IN_SET(#{map.supervisorOrgId},oi.supervisor_org_ids)</if>
+        <if test="map.supervisorManagerUserId!= null "> and oi.supervisor_manager_user_id = #{map.supervisorManagerUserId}</if>
+        <if test="map.reportTime!= null "> and oi.report_time = #{map.reportTime}</if>
+        <if test="map.reportUserId!= null "> and oi.report_user_id = #{map.reportUserId}</if>
+        <if test="map.checkTime!= null "> and oi.check_time = #{map.checkTime}</if>
+        <if test="map.issueCategoryId!= null "> and oi.issue_category_id = #{map.issueCategoryId}</if>
+        <if test="map.issueSubcategoryId!= null "> and oi.issue_subcategory_id = #{map.issueSubcategoryId}</if>
+        <if test="map.severity!= null "> and oi.severity = #{map.severity}</if>
+        <if test="map.isSign!= null "> and oi.is_sign = #{map.isSign}</if>
+        <if test="map.isSupervise!= null "> and oi.is_supervise = #{map.isSupervise}</if>
+        <if test="map.getSpecificIssuesContent!= null "> and oi.id = #{map.id}
+            si.data_type = 1
+        </if>
+
+        ORDER BY oi.report_time DESC
+    </select>
+
+    <select id="selectOverseeIssueList" parameterType="map" resultType="com.chd.modules.oversee.issue.entity.OverseeIssue">
+        SELECT oi.*
+        <if test="map.getSpecificIssuesContent!= null ">
+            ,si.specific_issues_content specificIssuesContent
+        </if>
+        <if test="map.getCreateUserRealName!= null ">
+            ,(SELECT realname FROM sys_user su WHERE su.id = oi.create_user_id) createUserRealName
+        </if>
+        <if test="map.getUpdateUserRealName!= null ">
+            ,(SELECT realname FROM sys_user su WHERE su.id = oi.update_user_id) updateUserRealName
+        </if>
+        FROM oversee_issue oi
+        <if test="map.getSpecificIssuesContent!= null ">
+            LEFT JOIN specific_issues si ON si.issue_id = oi.id
+        </if>
+        WHERE oi.data_type = 1
+        <if test="map.id!= null "> and oi.id = #{map.id}</if>
+        <if test="map.num!= null "> and oi.num LIKE #{map.num}</if>
+        <if test="map.title!= null "> and oi.title LIKE #{map.title}</if>
+        <if test="map.subtitle!= null "> and oi.subtitle LIKE #{map.subtitle}</if>
+        <if test="map.submitState!= null "> and oi.submit_state = #{map.submitState}</if>
+        <if test="map.approvalBody!= null "> and oi.approval_body = #{map.approvalBody}</if>
+        <if test="map.source!= null "> and oi.source = #{map.source}</if>
+        <if test="map.isCompanyLeadershipReview!= null "> and oi.is_company_leadership_review = #{map.isCompanyLeadershipReview}</if>
+        <if test="map.headquartersLeadDepartmentOrgId!= null "> and oi.headquarters_lead_department_org_id = #{map.headquartersLeadDepartmentOrgId}</if>
+        <if test="map.headquartersLeadDepartmentManagerUserId!= null "> and oi.headquarters_lead_department_manager_user_id = #{map.headquartersLeadDepartmentManagerUserId}</if>
+        <if test="map.responsibleUnitOrgId!= null "> and oi.responsible_unit_org_id = #{map.responsibleUnitOrgId}</if>
+        <if test="map.responsibleLeadDepartmentOrgId!= null "> and oi.responsible_lead_department_org_id = #{map.responsibleLeadDepartmentOrgId}</if>
+        <if test="map.supervisorOrgId!= null "> and oi.is_supervise = #{map.supervisorOrgId}</if>
+        <if test="map.supervisorOrgId!= null "> and oi.supervisor_org_id = #{map.supervisorOrgId}</if>
+        <if test="map.supervisorManagerUserId!= null "> and oi.supervisor_manager_user_id = #{map.supervisorManagerUserId}</if>
+        <if test="map.reportTime!= null "> and oi.report_time = #{map.reportTime}</if>
+        <if test="map.reportUserId!= null "> and oi.report_user_id = #{map.reportUserId}</if>
+        <if test="map.checkTime!= null "> and oi.check_time = #{map.checkTime}</if>
+        <if test="map.issueCategoryId!= null "> and oi.issue_category_id = #{map.issueCategoryId}</if>
+        <if test="map.issueSubcategoryId!= null "> and oi.issue_subcategory_id = #{map.issueSubcategoryId}</if>
+        <if test="map.severity!= null "> and oi.severity = #{map.severity}</if>
+        <if test="map.isSign!= null "> and oi.is_sign = #{map.isSign}</if>
+        <if test="map.isSupervise!= null "> and oi.is_supervise = #{map.isSupervise}</if>
+        <if test="map.getSpecificIssuesContent!= null "> and oi.id = #{map.id}
+            si.data_type = 1
+        </if>
+        <if test="map.isDocument!= null ">
+            and oi.is_document = 0
+        </if>
+        ORDER BY oi.report_time
+        <if test="map.isDocument!= null ">
+            limit 10
+        </if>
+    </select>
+
+    <select id="getIssueDetailById" parameterType="long" resultType="com.chd.modules.oversee.issue.entity.OverseeIssueDetailVo">
+        select
+            (select GROUP_CONCAT(tb1.org_short_name order by tb1.`org_id`  SEPARATOR ';') as name
+             from my_org tb1 where find_in_set(tb1.org_id,t1.headquarters_lead_department_org_id)) as headquarters_lead_department_org,
+            (select GROUP_CONCAT(tb1.org_short_name order by tb1.`org_id`  SEPARATOR ';') as name
+             from my_org tb1 where find_in_set(tb1.org_id,t1.responsible_lead_department_org_id)) as responsible_lead_department_org,
+            (select GROUP_CONCAT(tb1.org_short_name order by tb1.`org_id`  SEPARATOR ';') as name
+             from my_org tb1 where find_in_set(tb1.org_id,t1.supervisor_org_ids)) as supervisor_org,
+            (select GROUP_CONCAT(tb1.org_short_name order by tb1.`org_id`  SEPARATOR ';') as name
+             from my_org tb1 where find_in_set(tb1.org_id,t1.responsible_unit_org_id)) as responsible_unit_org,
+            (select GROUP_CONCAT(tb1.org_short_name order by tb1.`org_id`  SEPARATOR ';') as name
+             from my_org tb1 where find_in_set(tb1.org_id,t1.responsible_org_ids)) as responsibleDeparts,
+            (select GROUP_CONCAT(tb1.name order by tb1.`sort`  SEPARATOR ';') as name from oversee_issue_category tb1 where find_in_set(tb1.id,t1.issue_category_id)) as issue_category,
+            (select GROUP_CONCAT(tb1.name order by tb1.`sort`  SEPARATOR ';') as name from oversee_issue_subcategory  tb1 where find_in_set(tb1.id,t1.issue_subcategory_id)) as issue_subcategory,
+            t3.user_name as report_user,
+            t2.specific_issues_content ,t1.*
+        from oversee_issue t1  left join specific_issues t2 on t1.specific_issues_id =t2.id left join my_user t3 on t1.report_user_id =t3.user_id
+        where t1.id=#{id}
+    </select>
+
+
+<!--    (select id FROM chd_workflow_process cwp WHERE cwp.biz_id = t1.id LIMIT 1) workflow_process_id,
+        left join issues_allocation ia on ia.issue_id = t1.id
+        left join issues_supervisor iss on iss.issue_id = t1.id
+
+        <if test="selectOrgId != null and selectOrgId !='' ">
+            OR EXISTS (SELECT oir.id FROM oversee_issue_role oir WHERE oir.issue_id = t1.id AND oir.role_type = 2 AND oir.data_id = #{selectOrgId})
+        </if>
+
+
+        (t1.submit_state !=0 AND t1.submit_state != 5)
+        OR (t1.submit_state = 0 AND t1.create_user_id = #{loginId})
+        OR (t1.submit_state = 5 AND t1.create_user_id = #{loginId} )
+
+-->
+
+    <sql id="queryIssueListWhere">
+        <where>
+            t1.data_type = 1
+            <if test="id != null"> and t1.id = #{query.id} </if>
+            <if test="idArray != null">
+                and t1.id in
+                <foreach collection="idArray" item="id" separator="," open="(" close=")" >
+                    #{id}
+                </foreach>
+             </if>
+            <if test="selectType != null">
+                <if test="
+                    selectType == '6'.toString()
+                    or selectType == '7'.toString()
+                    or selectType == '8'.toString()
+                    or selectType == '10'.toString()
+                    or selectType == '12'.toString()
+                    or selectType == '13'.toString()
+                ">
+                    and mos.is_show != -1
+                </if>
+            </if>
+            <if test="num != null and num !='' "> and t1.num like concat('%', #{num}, '%') </if>
+            <if test="title != null and title !='' "> and t1.title like concat('%', #{title}, '%') </if>
+            <if test="subtitle != null and subtitle !='' "> and t1.subtitle  like concat('%', #{subtitle}, '%') </if>
+            <if test="specificIssuesId != null"> and t1.specific_issues_id = #{specificIssuesId} </if>
+            <if test="submitState != null"> and t1.submit_state = #{submitState} </if>
+            <if test="source != null"> and t1.source = #{source} </if>
+            <if test="isCompanyLeadershipReview != null"> and t1.is_company_leadership_review = #{isCompanyLeadershipReview} </if>
+            <if test="headquartersLeadDepartmentOrgId != null and headquartersLeadDepartmentOrgId !='' "> and t1.headquarters_lead_department_org_id = #{headquartersLeadDepartmentOrgId} </if>
+            <if test="headquartersLeadDepartmentManagerUserId != null and headquartersLeadDepartmentManagerUserId !='' "> and t1.headquarters_lead_department_manager_user_id = #{headquartersLeadDepartmentManagerUserId} </if>
+            <if test="responsibleUnitOrgId != null and responsibleUnitOrgId !='' "> and t1.responsible_unit_org_id = #{responsibleUnitOrgId} </if>
+            <if test="responsibleUnitOrg != null and responsibleUnitOrg !='' "> and  EXISTS (select 1 from my_org mo where (mo.org_name like concat('%', #{responsibleUnitOrg}, '%') OR mo.org_short_name like concat('%', #{responsibleUnitOrg}, '%')) and find_in_set(t1.responsible_unit_org_id,mo.org_id)) </if>
+            <if test="supervisorOrg != null and supervisorOrg !='' "> and  EXISTS (select 1 from my_org mo where (mo.org_name like concat('%', #{supervisorOrg}, '%') OR mo.org_short_name like concat('%', #{supervisorOrg}, '%')) and find_in_set(t1.supervisor_org_ids,mo.org_id)) </if>
+            <if test="headquartersLeadDepartmentOrg != null and headquartersLeadDepartmentOrg !='' "> and  EXISTS (select 1 from my_org mo where (mo.org_name like concat('%', #{headquartersLeadDepartmentOrg}, '%') OR mo.org_short_name like concat('%', #{headquartersLeadDepartmentOrg}, '%')) and find_in_set(t1.headquarters_lead_department_org_id,mo.org_id)) </if>
+            <if test="responsibleLeadDepartmentOrg != null and responsibleLeadDepartmentOrg !='' "> and  EXISTS (select 1 from my_org mo where (mo.org_name like concat('%', #{responsibleLeadDepartmentOrg}, '%') OR mo.org_short_name like concat('%', #{responsibleLeadDepartmentOrg}, '%')) and find_in_set(t1.responsible_lead_department_org_id,mo.org_id)) </if>
+            <if test="responsibleLeadDepartmentOrgId != null and responsibleLeadDepartmentOrgId !='' "> and t1.responsible_lead_department_org_id = #{responsibleLeadDepartmentOrgId} </if>
+            <if test="isSupervise != null"> and t1.is_supervise = #{isSupervise} </if>
+            <if test="supervisorOrgIds != null and supervisorOrgIds !='' "> and t1.supervisor_org_ids = #{supervisorOrgIds} </if>
+            <if test="supervisorOrgId!= null "> and FIND_IN_SET(#{supervisorOrgId},t1.supervisor_org_ids)</if>
+            <if test="supervisorManagerUserId != null and supervisorManagerUserId !='' "> and t1.supervisor_manager_user_id = #{supervisorManagerUserId} </if>
+            <if test="reportTime != null"> and t1.report_time = #{reportTime} </if>
+            <if test="reportUserId != null and reportUserId !='' "> and t1.report_user_id = #{reportUserId} </if>
+            <if test="checkTime != null"> and t1.check_time = #{checkTime} </if>
+            <if test="approvalBody != null and approvalBody !='' "> and t1.approval_body = #{approvalBody} </if>
+            <if test="issueCategoryId != null"> and t1.issue_category_id = #{issueCategoryId} </if>
+            <if test="issueSubcategoryId != null"> and t1.issue_subcategory_id = #{issueSubcategoryId} </if>
+            <if test="severity != null"> and t1.severity = #{severity} </if>
+            <if test="isSign != null"> and t1.is_sign = #{isSign} </if>
+            <if test="createUserId != null and createUserId !='' "> and t1.create_user_id = #{createUserId} </if>
+            <if test="updateUserId != null and updateUserId !='' "> and t1.update_user_id = #{updateUserId} </if>
+            <if test="startTime != null"><![CDATA[ and t1.create_time >= #{startTime} ]]></if>
+            <if test="endTime != null"><![CDATA[ and t1.create_time <= #{endTime} ]]></if>
+            <if test="dataType != null"> and t1.data_type = #{dataType} </if>
+            <if test="completedTime != null"> and t1.completed_time = #{completedTime} </if>
+            <if test="responsibleOrgId != null"> and FIND_IN_SET(#{responsibleOrgId},t1.responsible_org_ids) </if>
+            <if test="completedTimeout != null and completedTimeout==1 ">
+                <![CDATA[
+                           and t1.submit_state = 1 and t1.expect_time is not null and ((t1.completed_time is not null  and t1.completed_time<=t1.expect_time ) OR (t1.completed_time is null  and NOW() <= t1.expect_time))
+                ]]>
+            </if>
+            <if test="completedTimeout != null and completedTimeout==2 ">
+                <![CDATA[
+                           and t1.submit_state = 1 and t1.expect_time is not null and ((t1.completed_time is not null  and t1.completed_time > t1.expect_time ) OR (t1.completed_time is null  and NOW() > t1.expect_time ))
+                ]]>
+            </if>
+            <if test="expectTimeGt!=null"> and t1.expect_time &gt;= #{expectTimeGt} </if>
+            <if test="expectTimeLt!=null"> and t1.expect_time &lt;= #{expectTimeLt} </if>
+            <if test="specificIssuesContent != null and specificIssuesContent!='' "> <![CDATA[ and t2.specific_issues_content  like concat('%', #{specificIssuesContent}, '%')]]> </if>
+            <if test="checkTimeGt != null and checkTimeGt !='' "> and t1.check_time &gt;= #{checkTimeGt} </if>
+            <if test="checkTimeLt != null and checkTimeLt !='' "> and t1.check_time &lt;= #{checkTimeLt} </if>
+            <if test="completedTimeGt != null and completedTimeGt !='' "> and t1.completed_time &gt;= #{completedTimeGt} </if>
+            <if test="completedTimeLt != null and completedTimeLt !='' "> and t1.completed_time &lt;= #{completedTimeLt} </if>
+            <if test="updateTimeGt != null and updateTimeGt !='' "> and t1.update_time &gt;= #{updateTimeGt} </if>
+            <if test="updateTimeLt != null and updateTimeLt !='' "> and t1.update_time &lt;= #{updateTimeLt} </if>
+            <if test="submitStateList != null  ">
+                and t1.submit_state IN
+                <foreach collection="submitStateList" item="submitState" separator="," open="(" close=")" >
+                    #{submitState}
+                </foreach>
+            </if>
+            <if test="selectUserId != null and selectUserId !='' ">
+                and (
+                    (
+                        t1.submit_state = 5
+                        AND t1.create_user_id = #{selectUserId}
+                        <if test="selectOrgIds != null and selectOrgIds !='' ">
+                            OR EXISTS (
+                            SELECT oir.id FROM oversee_issue_role oir WHERE oir.issue_id = t1.id AND oir.role_type = 2 AND FIND_IN_SET(oir.data_id,#{selectOrgIds}) AND source ="INITIATOR"
+                            )
+                        </if>
+                    )
+                    OR
+                    (
+                        t1.submit_state != 5 AND
+                        (
+                            t1.create_user_id = #{selectUserId}
+                            <if test="selectOrgIds != null and selectOrgIds !='' ">
+                                OR EXISTS (
+                                SELECT oir.id FROM oversee_issue_role oir WHERE oir.issue_id = t1.id AND oir.role_type = 2 AND FIND_IN_SET(oir.data_id,#{selectOrgIds})
+                                )
+                            </if>
+                            OR EXISTS (SELECT oir.id FROM oversee_issue_role oir WHERE oir.issue_id = t1.id AND oir.role_type = 1 AND oir.data_id = #{selectUserId})
+                        )
+                    )
+                )
+            </if>
+            <if test="loginId != null and loginId !=''">
+                AND (
+                    t1.submit_state !=0
+                    OR (t1.submit_state = 0 AND t1.create_user_id = #{loginId})
+                )
+            </if>
+
+
+        </where>
+    </sql>
+
+    <sql id="queryIssueListWhereByselectUserId">
+
+    </sql>
+    <sql id="queryIssueListSelect">
+        select
+            (
+                select GROUP_CONCAT(tb1.org_short_name order by tb1.`org_id`  SEPARATOR ';') as name
+                from my_org tb1 where find_in_set(tb1.org_id,t1.headquarters_lead_department_org_id)
+            ) as headquarters_lead_department_org,
+            (
+                select GROUP_CONCAT(tb1.org_short_name order by tb1.`org_id`  SEPARATOR ';') as name
+                from my_org tb1 where find_in_set(tb1.org_id,t1.responsible_lead_department_org_id)
+            ) as responsible_lead_department_org,
+            (
+                select GROUP_CONCAT(tb1.org_short_name order by tb1.`org_id`  SEPARATOR ';') as name
+                from my_org tb1 where find_in_set(tb1.org_id,t1.supervisor_org_ids)
+            ) as supervisor_org,
+            (
+                select GROUP_CONCAT(tb1.org_short_name order by tb1.`org_id`  SEPARATOR ';') as name
+                from my_org tb1 where find_in_set(tb1.org_id,t1.responsible_unit_org_id)
+            ) as responsible_unit_org,
+            (
+                select GROUP_CONCAT(tb1.org_short_name order by tb1.`org_id`  SEPARATOR ';') as name
+                from my_org tb1 where find_in_set(tb1.org_id,t1.responsible_org_ids)
+            ) as responsibleDeparts,
+            (select GROUP_CONCAT(tb1.name order by tb1.`sort`  SEPARATOR ';') as name from oversee_issue_category tb1 where find_in_set(tb1.id,t1.issue_category_id)) as issue_category,
+            (select GROUP_CONCAT(tb1.name order by tb1.`sort`  SEPARATOR ';') as name from oversee_issue_subcategory  tb1 where find_in_set(tb1.id,t1.issue_subcategory_id)) as issue_subcategory,
+
+            <![CDATA[
+                    case when ( t1.submit_state = 1 and t1.expect_time is not null and ((t1.completed_time is not null  and t1.completed_time<=t1.expect_time ) OR (t1.completed_time is null and NOW() <= t1.expect_time)) ) then 1
+                         when ( t1.submit_state = 1 and t1.expect_time is not null and ((t1.completed_time is not null  and t1.completed_time > t1.expect_time ) OR (t1.completed_time is null and NOW() > t1.expect_time )) ) then 2
+                         else null
+                    end
+                ]]> as completed_timeout,
+
+            t3.user_name as report_user,
+            t2.specific_issues_content ,t1.*
+
+    </sql>
+    <sql id="queryIssueListFrom">
+        from oversee_issue t1
+        left join specific_issues t2 on t1.specific_issues_id =t2.id
+        left join my_user t3 on t1.report_user_id =t3.user_id
+    </sql>
+    <select id="queryIssueDetailPage" parameterType="com.chd.modules.oversee.issue.entity.OverseeIssueQueryVo" resultType="com.chd.modules.oversee.issue.entity.OverseeIssueDetailVo">
+        <include refid="queryIssueListSelect" />
+        <include refid="queryIssueListFrom" />
+        <include refid="queryIssueListWhere" />
+        order by
+        <if test="orderByType != null and orderByType !='' ">
+            <if test="orderByType.toString() == '1'.toString() ">
+                t1.num
+            </if>
+            <if test="orderByType.toString() == '0'.toString() ">
+                create_time desc
+            </if>
+        </if>
+        <if test="orderByType == null or orderByType =='' ">
+            create_time desc
+        </if>
+
+    </select>
+
+    <select id="queryOssFilePage" parameterType="com.chd.modules.oversee.issue.entity.OverseeIssueQueryVo" resultType="com.chd.modules.oversee.issue.entity.OssFileVo">
+        SELECT of1.*
+        from oss_file of1
+        left join oss_file_issue ofi ON ofi.oss_file_id = of1.id
+        left join oversee_issue t1 ON ofi.issue_id = t1.id
+        left join specific_issues t2 on t1.specific_issues_id =t2.id
+        left join my_user t3 on t1.report_user_id =t3.user_id
+
+        <include refid="queryIssueListWhere" />
+        <if test="responsibleUnitOrgId != null and responsibleUnitOrgId !='' ">
+            and of1.responsible_unit_org_id = #{responsibleUnitOrgId}
+        </if>
+
+        order by create_time desc
+    </select>
+
+    <select id="queryIssueDetailAnalysisList" parameterType="com.chd.modules.oversee.issue.entity.OverseeIssueQueryVo" resultType="com.chd.modules.oversee.issue.entity.IssueAnalysisItemVo">
+        select
+            <if test="selectType != null">
+                <if test="selectType == '0'.toString()">
+                    count(t1.id) value
+                </if>
+                <if test="selectType == '1'.toString()">
+                    (SELECT sdi.item_text FROM sys_dict_item sdi WHERE sdi.dict_id = (SELECT id FROM sys_dict sd WHERE sd.dict_code = "issue_source" LIMIT 1) AND sdi.item_value = t1.source) as name,
+                    count(DISTINCT t1.id) as value
+                    ,SUM(IF(t1.submit_state!=1,1,0)) completeCount
+                    ,SUM(IF(t1.submit_state=1,1,0)) undoneCount
+                </if>
+                <if test="selectType == '2'.toString()">
+                    (SELECT sdi.item_text FROM sys_dict_item sdi WHERE sdi.dict_id = (SELECT id FROM sys_dict sd WHERE sd.dict_code = "issue_submit_state" LIMIT 1) AND sdi.item_value = t1.submit_state) as name,
+                    count(DISTINCT t1.id) as value
+                </if>
+                <if test="selectType == '6'.toString()">
+                    (SELECT IFNULL(org_short_name,org_name) FROM my_org mo WHERE mo.org_id = t1.responsible_unit_org_id) as name,
+                    count(DISTINCT t1.id) as value
+                </if>
+                <if test="selectType == '10'.toString()">
+                    (SELECT IFNULL(org_short_name,org_name) FROM my_org mo WHERE mo.org_id = t1.responsible_unit_org_id) as name,
+                    count(DISTINCT t1.id) as value,
+                    IFNULL(
+                            (
+                                SELECT COUNT(iss.id)
+                                FROM issues_supervisor iss
+                                LEFT JOIN my_org mo1 ON mo1.org_id = iss.supervisor_org_id
+                                LEFT JOIN oversee_issue oi1 ON oi1.id = iss.issue_id
+                                WHERE oi1.data_type = 1 AND iss.data_type = 1 AND (SELECT mo2.path FROM my_org mo2 WHERE mo2.org_id = t1.responsible_unit_org_id )
+                                                    LIKE CONCAT(mo1.path,"%")
+                            )
+                    ,0) as superviseCount
+                </if>
+                <if test="selectType == '12'.toString()">
+                    (SELECT IFNULL(org_short_name,org_name) FROM my_org mo WHERE mo.org_id = t1.responsible_unit_org_id) as name,
+                    count(DISTINCT t1.id) as value
+                </if>
+                <if test="selectType == '15'.toString()">
+                    (SELECT oic1.name FROM oversee_issue_category oic1 WHERE oic1.id = t1.issue_category_id) as name,
+                    count(DISTINCT t1.id) as value
+                </if>
+                <if test="selectType == '16'.toString()">
+                    (SELECT ois1.name FROM oversee_issue_subcategory ois1 WHERE ois1.id = t1.issue_subcategory_id) as name,
+                    count(DISTINCT t1.id) as value
+                </if>
+                <if test="selectType == '17'.toString()">
+                    (SELECT ois1.name FROM oversee_issue_subcategory ois1 WHERE ois1.id = t1.issue_subcategory_id) as subName,
+                    (SELECT oic1.name FROM oversee_issue_category oic1 WHERE oic1.id = t1.issue_category_id) as name,
+                    count(DISTINCT t1.id) as value
+                </if>
+                <if test="selectType == '20'.toString()">
+                    date_format(t1.check_time, '%Y')  as name,
+                    count(DISTINCT t1.id) as value
+                </if>
+
+            </if>
+            <if test="selectType == null">
+                count(t1.id) value
+            </if>
+        from oversee_issue t1
+
+        <if test="selectType != null">
+            <if test="
+                selectType == '6'.toString()
+                or selectType == '7'.toString()
+                or selectType == '8'.toString()
+                or selectType == '10'.toString()
+                or selectType == '12'.toString()
+                or selectType == '13'.toString()
+            ">
+                left join my_org_settings mos on mos.org_id = t1.responsible_unit_org_id
+            </if>
+        </if>
+
+        left join specific_issues t2 on t1.specific_issues_id =t2.id
+        left join my_user t3 on t1.report_user_id =t3.user_id
+        <include refid="queryIssueListWhere" />
+        <if test="selectType != null">
+            <if test="selectType == '1'.toString()">
+                group by t1.source
+            </if>
+            <if test="selectType == '2'.toString()">
+                group by t1.submit_state
+            </if>
+            <if test="selectType == '6'.toString()">
+                group by t1.responsible_unit_org_id
+            </if>
+            <if test="selectType == '10'.toString()">
+                group by t1.responsible_unit_org_id
+            </if>
+            <if test="selectType == '12'.toString()">
+                group by t1.responsible_unit_org_id
+            </if>
+            <if test="selectType == '15'.toString()">
+                group by t1.issue_category_id
+            </if>
+            <if test="selectType == '16'.toString()">
+                group by t1.issue_subcategory_id
+            </if>
+            <if test="selectType == '17'.toString()">
+                group by t1.issue_subcategory_id
+            </if>
+            <if test="selectType == '20'.toString()">
+                group by date_format(t1.check_time, '%Y')
+            </if>
+        </if>
+
+        <if test="selectType != null">
+            <if test="
+                selectType == '6'.toString()
+                or selectType == '7'.toString()
+                or selectType == '8'.toString()
+                or selectType == '10'.toString()
+                or selectType == '12'.toString()
+                or selectType == '13'.toString()
+            ">
+                ORDER BY mos.sort
+            </if>
+        </if>
+
+    </select>
+
+    <update id="updateSubmitState" parameterType="com.chd.modules.oversee.issue.entity.OverseeIssue">
+        UPDATE oversee_issue
+        <set>
+            <if test="submitState != null"> submit_state = #{submitState}, </if>
+            <if test="reportTime != null"> report_time = #{reportTime}, </if>
+            <if test="reportUserId != null and reportUserId !='' "> report_user_id = #{reportUserId}, </if>
+            <if test="updateUserId != null and updateUserId !='' "> update_user_id = #{updateUserId}, </if>
+            <if test="completedTime != null"> completed_time = #{completedTime}, </if>
+            <if test="processId != null"> process_id = #{processId}, </if>
+            <if test="processDefId != null"> process_def_id = #{processDefId}, </if>
+            <if test="isDocument != null"> is_document = 1, </if>
+            update_time=now()
+        </set>
+        WHERE id = #{id}
+    </update>
+</mapper>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.workflow.mapper.WorkflowCommentMapper">
+
+    <insert id="insertComment" parameterType="com.chd.modules.workflow.entity.WorkflowComment"   >
+        INSERT INTO chd_workflow_comment (  id, task_id,task_key, user_id, user_name, process_instance_id, comment, task_type, type_name, task_name, form_id, form_text, create_time ) VALUES
+            (#{id} ,#{taskId},#{taskKey} ,#{userId} ,#{userName} ,#{processInstanceId} ,#{comment} ,#{taskType} ,#{typeName} ,#{taskName} ,#{formId} ,#{formText} ,#{createTime} )
+    </insert>
+
+    <select id="commentListByProcessId" parameterType="string" resultType="com.chd.modules.workflow.entity.WorkflowComment">
+        SELECT * FROM chd_workflow_comment WHERE process_instance_id=#{processInstanceId} order by create_time desc
+    </select>
+
+    <select id="findListByTaskKey" parameterType="map" resultType="com.chd.modules.workflow.entity.WorkflowComment">
+        SELECT * FROM chd_workflow_comment WHERE process_instance_id=#{processInstanceId} and task_key=#{taskKey} order by create_time desc
+    </select>
+
+    <select id="findOrgidListByTaskKey" parameterType="map" resultType="com.chd.modules.workflow.entity.WorkflowComment">
+        SELECT t2.*,t3.org_id FROM chd_workflow_comment  t2
+            left join my_user t3 on t2.user_id =t3.user_id
+        WHERE t2.process_instance_id=#{processInstanceId} and t2.task_key=#{taskKey} order by create_time desc
+    </select>
+
+    <select id="findListByTaskKeys" parameterType="map" resultType="com.chd.modules.workflow.entity.WorkflowComment">
+        SELECT * FROM chd_workflow_comment WHERE process_instance_id=#{processInstanceId}
+            AND task_key IN
+            <foreach collection="taskKeyList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            order by create_time desc
+    </select>
+
+    <insert id="insertCommentFormData" parameterType="map">
+        INSERT INTO chd_workflow_form_data (  id, form_data, create_time ) VALUES
+            (#{id} ,#{formData} ,now())
+    </insert>
+
+</mapper>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.oversee.issue.mapper.OverseeIssueCategoryMapper">
+
+    <select id="selectOverseeIssueCategoryPageVo" parameterType="map" resultType="com.chd.modules.oversee.issue.entity.OverseeIssueCategory">
+        SELECT oic.* ,
+               (SELECT realname FROM sys_user su WHERE su.id = oic.create_user_id) createUserRealName,
+               (SELECT realname FROM sys_user su WHERE su.id = oic.update_user_id) updateUserRealName
+        FROM oversee_issue_category oic
+        WHERE oic.data_type = 1
+        <if test="map.name!= null "> and oic.name LIKE #{map.name}</if>
+        ORDER BY oic.sort
+    </select>
+
+    <select id="selectOverseeIssueCategoryList" parameterType="map" resultType="com.chd.modules.oversee.issue.entity.OverseeIssueCategory">
+        SELECT oic.*
+        FROM oversee_issue_category oic
+        WHERE oic.data_type = 1
+        <if test="map.name!= null "> and oic.name LIKE #{map.name}</if>
+        ORDER BY oic.sort
+    </select>
+
+    <select id="findByName" parameterType="string" resultType="com.chd.modules.oversee.issue.entity.OverseeIssueCategory">
+        SELECT * FROM oversee_issue_category   WHERE name = #{name}
+    </select>
+
+
+</mapper>

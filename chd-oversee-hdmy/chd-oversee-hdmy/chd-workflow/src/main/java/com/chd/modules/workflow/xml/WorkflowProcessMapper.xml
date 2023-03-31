@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.workflow.mapper.WorkflowProcessMapper">
+
+    <resultMap id="taskMap" type="com.chd.modules.workflow.vo.WorkflowTaskVo" >
+        <result column="assignee" property="assignee" />
+        <result column="task_key" property="taskKey" />
+        <result column="task_name" property="taskName" />
+        <result column="task_id" property="taskId" />
+         <collection property="candidateGroup"    ofType="string"  javaType="list">
+            <result column="candidate_group" property="candidateGroup" jdbcType="VARCHAR"/>
+        </collection>
+         <collection property="candidateUser"    ofType="string"  javaType="list">
+        <result column="candidate_user" property="candidateUser" jdbcType="VARCHAR"/>
+    </collection>
+    </resultMap>
+
+    <insert id="insertProcess" parameterType="com.chd.modules.workflow.entity.WorkflowProcess"   >
+        INSERT INTO chd_workflow_process (  id, title, start_user_id, start_user_name, apply_time, biz_id, biz_url, process_category, state, process_def_id, process_def_key, tenant_id, remark, create_by, create_time, update_by, update_time ) VALUES
+            (#{id} ,#{title} ,#{startUserId} ,#{startUserName} ,#{applyTime} ,#{bizId} ,#{bizUrl} ,#{processCategory} ,#{state} ,#{processDefId} ,#{processDefKey} ,#{tenantId} ,#{remark} ,#{createBy} ,#{createTime} ,#{updateBy} ,#{updateTime} )
+    </insert>
+
+
+    <select id="processListByIds" parameterType="list" resultType="com.chd.modules.workflow.entity.WorkflowProcess">
+        SELECT * FROM chd_workflow_process WHERE id in
+        <foreach collection="list" item="id" separator="," open="(" close=")" >
+            #{id}
+        </foreach>
+        order by create_time desc
+    </select>
+
+    <select id="findByBiz" parameterType="string" resultType="com.chd.modules.workflow.entity.WorkflowProcess">
+        SELECT * FROM chd_workflow_process WHERE biz_id=#{bizId}
+    </select>
+
+    <select id="findNextTaskNode" parameterType="string" resultMap="taskMap">
+        select RES.ASSIGNEE_ as assignee,RES.PROC_INST_ID_ as id,RES.TASK_DEF_KEY_ as task_key,LINK.GROUP_ID_ as candidate_group,LINK.USER_ID_ as candidate_user,RES.NAME_ as task_name,RES.ID_ as task_id
+        from ACT_RU_TASK RES
+                 left outer join ACT_RU_VARIABLE VAR ON RES.PROC_INST_ID_ = VAR.EXECUTION_ID_
+                 left join ACT_RU_IDENTITYLINK LINK on LINK.TASK_ID_ = RES.ID_ and LINK.TYPE_ = 'candidate'
+        WHERE RES.SUSPENSION_STATE_ = 1
+          and RES.PROC_INST_ID_ =#{id}
+        group by LINK.GROUP_ID_,RES.ASSIGNEE_
+        order by isnull(RES.DUE_DATE_) asc,RES.DUE_DATE_ desc, RES.CREATE_TIME_ desc LIMIT 20 OFFSET 0
+    </select>
+
+
+    <update id="processStateStart2Pending" parameterType="string">
+        update chd_workflow_process set state='PENDING' where state='START' and id=#{id}
+    </update>
+
+    <update id="upTaskAssignee" parameterType="map">
+        update ACT_RU_TASK set ASSIGNEE_=#{map.userId} where
+        <if test="map.id != null and map.id !='' ">
+            PROC_INST_ID_=#{map.id}
+        </if>
+        <if test="map.ids!=null and map.ids.size() &gt; 0">
+            PROC_INST_ID_ IN
+            <foreach collection="map.ids" item="id" separator="," open="(" close=")" >
+                #{id}
+            </foreach>
+        </if>
+
+    </update>
+
+<!--    previousTaskDataSrc  后续可通过UNION ALL合并 即可显示多个子流程用户-->
+
+    <select id="todoList"  resultType="com.chd.modules.workflow.vo.WorkflowTaskVo">
+        select
+            distinct t1.title,t1.start_user_name,t1.state,t1.id as process_id,t1.create_time as apply_time,t1.process_def_id as processDefKey,
+                     t1.biz_id,RES.NAME_ as task_name,RES.ID_ as task_id,RES.TASK_DEF_KEY_ as task_key
+                     ,RES.FORM_KEY_ as form_key,t1.next_user_task
+                     ,(
+                        SELECT CONCAT_WS(',',su.realname,AHT.ASSIGNEE_,DATE_FORMAT(AHT.END_TIME_, '%Y-%m-%d %H:%i:%s'))
+                        FROM ACT_HI_TASKINST AHT
+                        LEFT JOIN sys_user su ON su.id = AHT.ASSIGNEE_
+                        WHERE
+                            AHT.PROC_INST_ID_ = RES.PROC_INST_ID_
+                            AND (
+                                    AHT.EXECUTION_ID_ = RES.EXECUTION_ID_
+                                OR
+                                    NOT EXISTS (SELECT ARE.ID_ FROM ACT_RU_EXECUTION ARE WHERE ARE.ID_ = AHT.EXECUTION_ID_)
+                            )
+                            AND AHT.END_TIME_ IS NOT NULL
+                        ORDER BY AHT.END_TIME_ DESC
+                        LIMIT 1
+                        ) previousTaskDataSrc
+
+        from ACT_RU_TASK RES
+        left outer join ACT_RU_VARIABLE VAR ON RES.PROC_INST_ID_ = VAR.EXECUTION_ID_
+        inner join ACT_RE_PROCDEF D on RES.PROC_DEF_ID_ = D.ID_
+        left join chd_workflow_process t1 on RES.PROC_INST_ID_ =t1.id
+        WHERE
+              RES.SUSPENSION_STATE_ = 1
+              and (RES.ASSIGNEE_ = #{task.assignee}
+                or ( RES.ASSIGNEE_ is null
+                    and exists(select LINK.ID_ from ACT_RU_IDENTITYLINK LINK where LINK.TASK_ID_ = RES.ID_ and LINK.TYPE_ = 'candidate' and (LINK.USER_ID_ = #{task.assignee}
+                    <if test="task.candidateGroup!=null and task.candidateGroup.size() &gt; 0">
+                        or LINK.GROUP_ID_ IN
+                        <foreach collection="task.candidateGroup" item="id" separator="," open="(" close=")" >
+                            #{id}
+                        </foreach>
+                    </if>
+                    ))))
+               <if test="task.title!=null and task.title !=''">
+                    and t1.title like concat('%', #{task.title}, '%')
+               </if>
+        order by isnull(RES.DUE_DATE_) asc,RES.DUE_DATE_ desc, RES.CREATE_TIME_ desc
+
+    </select>
+
+<!--   TODO 临时限制and RES.PROC_INST_ID_ = oi.process_id 还需要查出重复原因  -->
+
+    <sql id="todoWhereSql">
+
+
+        and (
+                D.CATEGORY_ NOT IN ("NoRectification","InitiateSupervision")
+                and RES.PROC_INST_ID_ = oi.process_id
+            )
+
+        and RES.SUSPENSION_STATE_ = 1
+        and (RES.ASSIGNEE_ = #{task.assignee}
+        or ( RES.ASSIGNEE_ is null
+        and exists(select LINK.ID_ from ACT_RU_IDENTITYLINK LINK where LINK.TASK_ID_ = RES.ID_ and LINK.TYPE_ = 'candidate' and (LINK.USER_ID_ = #{task.assignee}
+
+        <if test="task.candidateGroup!=null and task.candidateGroup.size() &gt; 0">
+            or LINK.GROUP_ID_ IN
+            <foreach collection="task.candidateGroup" item="id" separator="," open="(" close=")" >
+                #{id}
+            </foreach>
+        </if>
+        )))
+        )
+        <if test="task.title!=null and task.title !=''">
+            and t1.title like concat('%', #{task.title}, '%')
+        </if>
+
+        <if test="map != null and map !='' ">
+
+            <if test="map.idArray != null">
+                and RES.ID_ in
+                <foreach collection="map.idArray" item="id" separator="," open="(" close=")" >
+                    #{id}
+                </foreach>
+            </if>
+            <if test="map.num != null and map.num !='' "> and oi.num like concat('%', #{map.num}, '%') </if>
+            <if test="map.title != null and map.title !='' "> and oi.title like concat('%', #{map.title}, '%') </if>
+            <if test="map.subtitle != null and map.subtitle !='' "> and oi.subtitle  like concat('%', #{map.subtitle}, '%') </if>
+            <if test="map.specificIssuesId != null"> and oi.specific_issues_id = #{map.specificIssuesId} </if>
+            <if test="map.submitState != null"> and oi.submit_state = #{map.submitState} </if>
+            <if test="map.source != null"> and oi.source = #{map.source} </if>
+            <if test="map.isCompanyLeadershipReview != null"> and oi.is_company_leadership_review = #{map.isCompanyLeadershipReview} </if>
+            <if test="map.headquartersLeadDepartmentOrgId != null and map.headquartersLeadDepartmentOrgId !='' "> and oi.headquarters_lead_department_org_id = #{map.headquartersLeadDepartmentOrgId} </if>
+            <if test="map.headquartersLeadDepartmentManagerUserId != null and map.headquartersLeadDepartmentManagerUserId !='' "> and oi.headquarters_lead_department_manager_user_id = #{map.headquartersLeadDepartmentManagerUserId} </if>
+            <if test="map.responsibleUnitOrgId != null and map.responsibleUnitOrgId !='' "> and oi.responsible_unit_org_id = #{map.responsibleUnitOrgId} </if>
+            <if test="map.responsibleUnitOrg != null and map.responsibleUnitOrg !='' "> and  EXISTS (select 1 from my_org mo where mo.org_name like concat('%', #{map.responsibleUnitOrg}, '%') and find_in_set(oi.responsible_unit_org_id,mo.org_id)) </if>
+            <if test="map.supervisorOrg != null and map.supervisorOrg !='' "> and  EXISTS (select 1 from my_org mo where mo.org_name like concat('%', #{map.supervisorOrg}, '%') and find_in_set(oi.supervisor_org_ids,mo.org_id)) </if>
+            <if test="map.headquartersLeadDepartmentOrg != null and map.headquartersLeadDepartmentOrg !='' "> and  EXISTS (select 1 from my_org mo where mo.org_name like concat('%', #{map.headquartersLeadDepartmentOrg}, '%') and find_in_set(oi.headquarters_lead_department_org_id,mo.org_id)) </if>
+            <if test="map.responsibleLeadDepartmentOrg != null and map.responsibleLeadDepartmentOrg !='' "> and  EXISTS (select 1 from my_org mo where mo.org_name like concat('%', #{map.responsibleLeadDepartmentOrg}, '%') and find_in_set(oi.responsible_lead_department_org_id,mo.org_id)) </if>
+            <if test="map.responsibleLeadDepartmentOrgId != null and map.responsibleLeadDepartmentOrgId !='' "> and oi.responsible_lead_department_org_id = #{map.responsibleLeadDepartmentOrgId} </if>
+            <if test="map.isSupervise != null"> and oi.is_supervise = #{map.isSupervise} </if>
+            <if test="map.supervisorOrgIds != null and map.supervisorOrgIds !='' "> and oi.supervisor_org_ids = #{map.supervisorOrgIds} </if>
+            <if test="map.supervisorOrgId!= null "> and FIND_IN_SET(#{map.supervisorOrgId},oi.supervisor_org_ids)</if>
+            <if test="map.supervisorManagerUserId != null and map.supervisorManagerUserId !='' "> and oi.supervisor_manager_user_id = #{map.supervisorManagerUserId} </if>
+            <if test="map.reportTime != null"> and oi.report_time = #{map.reportTime} </if>
+            <if test="map.reportUserId != null and map.reportUserId !='' "> and oi.report_user_id = #{map.reportUserId} </if>
+            <if test="map.checkTime != null"> and oi.check_time = #{map.checkTime} </if>
+            <if test="map.approvalBody != null and map.approvalBody !='' "> and oi.approval_body = #{map.approvalBody} </if>
+            <if test="map.issueCategoryId != null"> and oi.issue_category_id = #{map.issueCategoryId} </if>
+            <if test="map.issueSubcategoryId != null"> and oi.issue_subcategory_id = #{map.issueSubcategoryId} </if>
+            <if test="map.severity != null"> and oi.severity = #{map.severity} </if>
+            <if test="map.isSign != null"> and oi.is_sign = #{map.isSign} </if>
+            <if test="map.createUserId != null and map.createUserId !='' "> and oi.create_user_id = #{map.createUserId} </if>
+            <if test="map.responsibleOrgId != null"> and FIND_IN_SET(#{map.responsibleOrgId},oi.responsible_org_ids) </if>
+            <if test="map.selectUserId != null and map.selectUserId !='' ">
+                and (
+                oi.create_user_id = #{map.selectUserId}
+
+                <if test="selectOrgIds != null and selectOrgIds !='' ">
+                    OR EXISTS (SELECT oir.id FROM oversee_issue_role oir WHERE oir.issue_id = oi.id AND oir.role_type = 2 AND FIND_IN_SET(oir.data_id,#{map.selectOrgIds}))
+                </if>
+
+                OR EXISTS (SELECT oir.id FROM oversee_issue_role oir WHERE oir.issue_id = oi.id AND oir.role_type = 1 AND oir.data_id = #{map.selectUserId})
+                )
+
+            </if>
+            <if test="map.updateUserId != null and map.updateUserId !='' "> and oi.update_user_id = #{map.updateUserId} </if>
+            <if test="map.startTime != null"><![CDATA[ and oi.create_time >= #{map.startTime} ]]></if>
+            <if test="map.endTime != null"><![CDATA[ and oi.create_time <= #{map.endTime} ]]></if>
+            <if test="map.dataType != null"> and oi.data_type = #{map.dataType} </if>
+            <if test="map.completedTime != null"> and oi.completed_time = #{map.completedTime} </if>
+            <if test="map.completedTimeout != null and map.completedTimeout==1 "> <![CDATA[ and oi.expect_time is not null and oi.completed_time is not null and oi.completed_time<=oi.expect_time ]]> </if>
+            <if test="map.completedTimeout != null and map.completedTimeout==2 "> <![CDATA[ and oi.expect_time is not null and oi.completed_time is not null and oi.completed_time > oi.expect_time ]]> </if>
+            <if test="map.specificIssuesContent != null and map.specificIssuesContent!='' "> <![CDATA[ and t2.specific_issues_content  like concat('%', #{map.specificIssuesContent}, '%')]]> </if>
+
+        </if>
+
+    </sql>
+
+    <select id="todoListByMap"  resultType="com.chd.modules.workflow.vo.WorkflowTaskVo">
+            select
+                distinct t1.title,oi.num,t1.start_user_name,t1.state,t1.id as process_id,t1.create_time as apply_time,t1.process_def_id as processDefKey,
+                         t1.biz_id,RES.NAME_ as task_name,RES.ID_ as task_id,RES.TASK_DEF_KEY_ as task_key
+                         ,RES.FORM_KEY_ as form_key,t1.next_user_task
+                         ,(
+                            SELECT CONCAT_WS(',',IFNULL(su.realname,''),IFNULL(AHT.ASSIGNEE_,''),DATE_FORMAT(AHT.END_TIME_, '%Y-%m-%d %H:%i:%s'))
+                            FROM ACT_HI_TASKINST AHT
+                            LEFT JOIN sys_user su ON su.id = AHT.ASSIGNEE_
+                            WHERE
+                                AHT.PROC_INST_ID_ = RES.PROC_INST_ID_
+                                AND (
+                                        AHT.EXECUTION_ID_ = RES.EXECUTION_ID_
+                                    OR
+                                        NOT EXISTS (SELECT ARE.ID_ FROM ACT_RU_EXECUTION ARE WHERE ARE.ID_ = AHT.EXECUTION_ID_)
+                                )
+                                AND AHT.END_TIME_ IS NOT NULL
+                            ORDER BY AHT.END_TIME_ DESC
+                            LIMIT 1
+                            ) previousTaskDataSrc
+
+            from ACT_RU_TASK RES
+            left outer join ACT_RU_VARIABLE VAR ON RES.PROC_INST_ID_ = VAR.EXECUTION_ID_
+            inner join ACT_RE_PROCDEF D on RES.PROC_DEF_ID_ = D.ID_
+            left join chd_workflow_process t1 on RES.PROC_INST_ID_ = t1.id
+            left join oversee_issue oi on oi.id = t1.biz_id
+            left join specific_issues t2 on oi.specific_issues_id =t2.id
+            WHERE 1 = 1 AND oi.data_type = 1
+                <include refid="todoWhereSql"></include>
+
+            order by
+            <if test="map != null and map !='' ">
+                    <if test="map.orderByType != null and map.orderByType !='' ">
+                        <if test="map.orderByType.toString() == '1'.toString() ">
+                            oi.num
+                        </if>
+                        <if test="map.orderByType.toString() == '0'.toString() ">
+                            isnull(RES.DUE_DATE_) asc,RES.DUE_DATE_ desc, RES.CREATE_TIME_ desc
+                        </if>
+                    </if>
+                    <if test="map.orderByType == null or map.orderByType =='' ">
+                        isnull(RES.DUE_DATE_) asc,RES.DUE_DATE_ desc, RES.CREATE_TIME_ desc
+                    </if>
+            </if>
+            <if test="map == null or map =='' ">
+                isnull(RES.DUE_DATE_) asc,RES.DUE_DATE_ desc, RES.CREATE_TIME_ desc
+            </if>
+
+
+    </select>
+
+
+
+
+
+    <select id="countUserTodoTotal" parameterType="map" resultType="long">
+        select
+            count( DISTINCT RES.ID_) as num
+        from ACT_RU_TASK RES
+        left join chd_workflow_process t1 on RES.PROC_INST_ID_ = t1.id
+        inner join ACT_RE_PROCDEF D on RES.PROC_DEF_ID_ = D.ID_
+        left join oversee_issue oi on oi.id = t1.biz_id
+        WHERE
+            RES.SUSPENSION_STATE_ = 1
+            and (
+                D.CATEGORY_ NOT IN ("NoRectification","InitiateSupervision")
+                and RES.PROC_INST_ID_ = oi.process_id
+            )
+            and (RES.ASSIGNEE_ = #{userId}
+                or ( RES.ASSIGNEE_ is null
+                     and exists(
+                         select LINK.ID_
+                         from ACT_RU_IDENTITYLINK LINK
+                         where LINK.TASK_ID_ = RES.ID_
+                                and LINK.TYPE_ = 'candidate'
+                                and (LINK.USER_ID_ =  #{userId}
+                                <if test="candidateGroup!=null and candidateGroup.size() &gt; 0">
+                                            or LINK.GROUP_ID_ IN
+                                    <foreach collection="candidateGroup" item="id" separator="," open="(" close=")" >
+                                        #{id}
+                                    </foreach>
+                                </if>
+                                )
+                         )
+                    )
+            )
+            AND EXISTS (SELECT oi.id FROM chd_workflow_process cwp LEFT JOIN oversee_issue oi ON oi.id = cwp.biz_id WHERE cwp.id = RES.PROC_INST_ID_ AND oi.data_type = 1 )
+    </select>
+
+
+    <select id="getPreviousTaskDataSrc"  resultType="java.lang.String">
+        SELECT CONCAT_WS(',',IFNULL(su.realname,''),IFNULL(AHT.ASSIGNEE_,''),DATE_FORMAT(AHT.END_TIME_, '%Y-%m-%d %H:%i:%s'))
+        FROM ACT_HI_TASKINST AHT
+                 LEFT JOIN sys_user su ON su.id = AHT.ASSIGNEE_
+        WHERE
+            AHT.PROC_INST_ID_ = #{map.processId}
+          AND (
+                    AHT.EXECUTION_ID_ = #{map.executionId}
+                OR
+                    NOT EXISTS (SELECT ARE.ID_ FROM ACT_RU_EXECUTION ARE WHERE ARE.ID_ = AHT.EXECUTION_ID_)
+            )
+          AND AHT.END_TIME_ IS NOT NULL
+        ORDER BY AHT.END_TIME_ DESC
+            LIMIT 1
+    </select>
+
+    <select id="countUserDoneTotal" parameterType="map"  resultType="long">
+        select count(*) as num from chd_workflow_comment t where t.user_id =#{userId}
+    </select>
+</mapper>

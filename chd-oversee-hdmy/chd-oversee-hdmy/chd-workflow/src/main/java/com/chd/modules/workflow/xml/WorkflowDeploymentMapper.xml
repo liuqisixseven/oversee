@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.workflow.mapper.WorkflowDeploymentMapper">
+
+
+
+    <select id="queryListByCategory" parameterType="string" resultType="com.chd.modules.workflow.entity.WorkflowDeployment">
+        SELECT * FROM chd_workflow_deployment where category = #{category}
+            order by create_time desc;
+    </select>
+
+</mapper>

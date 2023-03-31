@@ -1,0 +1,46 @@
+
+ALTER TABLE `sys_user`
+MODIFY COLUMN `org_code` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '登录会话的机构编码' AFTER `phone`;
+
+ALTER TABLE `sys_role_index`
+ADD COLUMN `component`  varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '组件' AFTER `url`,
+ADD COLUMN `is_route`  tinyint(1) NULL DEFAULT 1 COMMENT '是否路由菜单: 0:不是  1:是（默认值1）' AFTER `component`;
+
+ALTER TABLE `jeecg_order_main`
+ADD COLUMN `bpm_status` varchar(3) NULL COMMENT '流程状态' AFTER `update_time`;
+
+UPDATE `sys_dict_item` SET `dict_id` = '4f69be5f507accea8d5df5f11346181a', `item_text` = '文本', `item_value` = '1', `description` = '', `sort_order` = 1, `status` = 1, `create_by` = 'admin', `create_time` = '2023-02-28 10:50:36', `update_by` = 'admin', `update_time` = '2022-07-04 16:29:21' WHERE `id` = '222705e11ef0264d4214affff1fb4ff9';
+UPDATE `sys_dict_item` SET `dict_id` = '4f69be5f507accea8d5df5f11346181a', `item_text` = '富文本', `item_value` = '2', `description` = '', `sort_order` = 2, `status` = 1, `create_by` = 'admin', `create_time` = '2031-02-28 10:50:44', `update_by` = 'admin', `update_time` = '2022-07-04 16:29:30' WHERE `id` = '6a7a9e1403a7943aba69e54ebeff9762';
+delete from sys_dict_item where id in ('1199607547704647681', '8bccb963e1cd9e8d42482c54cc609ca2');
+update sys_sms_template set template_type = '2' where template_type='4';
+update sys_sms_template set template_type = '1' where template_type='3';
+
+ALTER TABLE `sys_sms_template`
+ADD COLUMN `use_status` varchar(1) NULL COMMENT '是否使用中 1是0否' AFTER `update_by`;
+
+ALTER TABLE `sys_sms`
+MODIFY COLUMN `es_type` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '发送方式：参考枚举MessageTypeEnum' AFTER `es_title`;
+
+
+ALTER TABLE sys_permission ADD `required_permissions` tinyint(1) DEFAULT 1 COMMENT '是否需要授权:    1:是   0:不是';
+INSERT INTO chd_oversee.sys_permission (id, parent_id, name, url, component, component_name, redirect, menu_type, perms, perms_type, sort_no, always_show, icon, is_route, is_leaf, keep_alive, hidden, hide_tab, description, create_by, create_time, update_by, update_time, del_flag, rule_flag, status, internal_or_external, required_permissions) VALUES('1575337085455257601', '', '巡视巡察办理', '/overseeflow', 'layouts/RouteView', NULL, NULL, 0, NULL, '1', 1.0, 0, 'cluster', 1, 0, 0, 0, 0, NULL, 'admin', '2022-09-29 12:10:03', 'admin', '2022-09-29 12:23:13', 0, 0, '1', 0, 0);
+INSERT INTO chd_oversee.sys_permission (id, parent_id, name, url, component, component_name, redirect, menu_type, perms, perms_type, sort_no, always_show, icon, is_route, is_leaf, keep_alive, hidden, hide_tab, description, create_by, create_time, update_by, update_time, del_flag, rule_flag, status, internal_or_external, required_permissions) VALUES('1575337687656648706', '1575337085455257601', '我的待办', '/overseeflow/todo', 'workflow/todo', NULL, NULL, 1, NULL, '1', NULL, 0, NULL, 1, 1, 0, 0, 0, NULL, 'admin', '2022-09-29 12:12:27', 'admin', '2022-09-29 12:13:17', 0, 0, '1', 0, 0);
+INSERT INTO chd_oversee.sys_permission (id, parent_id, name, url, component, component_name, redirect, menu_type, perms, perms_type, sort_no, always_show, icon, is_route, is_leaf, keep_alive, hidden, hide_tab, description, create_by, create_time, update_by, update_time, del_flag, rule_flag, status, internal_or_external, required_permissions) VALUES('1575337847237332994', '1575337085455257601', '我的已办', '/overseeflow/myprocess', 'workflow/myprocess', NULL, NULL, 1, NULL, '1', NULL, 0, NULL, 1, 1, 0, 0, 0, NULL, 'admin', '2022-09-29 12:13:05', 'admin', '2022-09-29 12:21:20', 0, 0, '1', 0, 0);
+
+CREATE TABLE `oversee_issue_file` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `issue_id` bigint(20) NOT  NULL COMMENT '问题ID',
+  `user_id`  varchar(50) NOT NULL COMMENT '用户id',
+  `specific_type` int(11) DEFAULT '0' COMMENT '归属业务类型:0-问题上报，1-整改措施',
+  `task_id`  varchar(50) NOT NULL COMMENT '任务id',
+  `files` varchar(200) DEFAULT  NULL COMMENT '附件',
+  `create_by` varchar(64) DEFAULT '' COMMENT '创建者',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_by` varchar(64) DEFAULT '' COMMENT '更新者',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  `data_type` int(4) NOT NULL DEFAULT 1 COMMENT '数据状态 -1 无效 1 有效',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8  COMMENT='问题上传文件记录';
+
+ALTER table chd_workflow_process add column next_user_task varchar(255) DEFAULT NULL COMMENT '下一个审批节点';
+ALTER table chd_workflow_process add column next_task_time datetime DEFAULT NULL COMMENT '下一个审批节点时间';

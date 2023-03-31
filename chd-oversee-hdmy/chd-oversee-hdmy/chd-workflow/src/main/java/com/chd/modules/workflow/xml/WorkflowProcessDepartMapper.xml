@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.workflow.mapper.WorkflowProcessDepartMapper">
+
+
+
+    <select id="processDepartListByProcessId" parameterType="map" resultType="com.chd.modules.workflow.entity.WorkflowProcessDepart">
+        select t3.org_name as depart_name,t2.* from chd_workflow_process_depart t1
+        left join chd_workflow_task_role_tag  t2 on t1.source =t2.source and t1.`role` = t2.`role`
+        left join my_org t3 on t1.depart_id =t3.org_id
+        WHERE  t1.process_id =#{processId}
+        <if test="code != null and code !='' "> and t2.code = #{code} </if>
+        <if test="subProcessId != null and subProcessId !='' "> and t1.sub_process_id = #{subProcessId} </if>
+        order by t1.create_time asc
+    </select>
+
+    <select id="getProcessDepartBySource" parameterType="map" resultType="com.chd.modules.workflow.entity.WorkflowProcessDepart">
+        select t3.org_name as depart_name,t2.*
+        from chd_workflow_process_depart t1
+        left join chd_workflow_task_role_tag  t2 on t1.source =t2.source and t1.`role` = t2.`role`
+        left join my_org t3 on t1.depart_id =t3.org_id
+        WHERE  t1.process_id =#{processId}
+        <if test="code != null and code !='' "> and t2.code = #{code} </if>
+        <if test="processId != null and processId !='' "> and t1.process_id = #{processId} </if>
+        <if test="source != null and source !='' "> and t1.source = #{source} </if>
+        <if test="role != null and role !='' "> and t1.role = #{role} </if>
+        order by t1.create_time asc
+    </select>
+
+
+
+</mapper>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.oversee.issue.mapper.OverseeIssueRoleMapper">
+
+
+    <select id="getAuthorizeSuperviseRoleList" parameterType="map" resultType="com.chd.modules.oversee.issue.entity.OverseeIssueRole">
+        SELECT * FROM oversee_issue_role oir
+        <where>
+            oir.data_type = 1
+            <if test="map.orgIds != null">
+                AND (
+                    oir.source IN
+                        <foreach collection="map.sources" item="item" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
+                    AND oir.role_type = 2
+                    AND oir.data_id IN
+                        <foreach collection="map.orgIds" item="item" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
+                )
+                <if test="map.userId != null">
+                    OR
+                </if>
+
+            </if>
+
+            <if test="map.userId != null">
+                <if test="map.orgIds == null">
+                    AND
+                </if>
+                 (
+                    oir.source IN
+                    <foreach collection="map.sources" item="item" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                    AND oir.role_type = 1 AND oir.data_id = #{map.userId}
+                )
+
+            </if>
+
+            <if test="map.userIds != null">
+                AND
+                 (
+                    oir.source IN
+                    <foreach collection="map.sources" item="item" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                    AND oir.role_type = 1
+                    AND oir.data_id IN
+                    <foreach collection="map.map.userIds" item="item" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                )
+
+            </if>
+
+            <if test="map.issueId != null">
+                AND oir.issue_id = #{map.issueId}
+            </if>
+
+        </where>
+
+
+    </select>
+
+</mapper>

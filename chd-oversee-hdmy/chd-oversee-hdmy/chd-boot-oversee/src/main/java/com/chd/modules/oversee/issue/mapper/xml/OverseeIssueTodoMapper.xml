@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.oversee.issue.mapper.OverseeIssueTodoMapper">
+
+    <select id="selectOverseeIssueTodoList" parameterType="map" resultType="com.chd.modules.oversee.issue.entity.OverseeIssueTodo">
+        SELECT oit.*
+        <if test="map.isGroupByIssueId!= null ">
+            ,count(0) issueTodoCount
+        </if>
+        FROM oversee_issue_todo oit
+        LEFT JOIN oversee_issue oi ON oit.issue_id = oi.id
+        WHERE oit.data_type = 1 AND oi.data_type = 1
+        <if test="map.issueId!= null "> and oit.issue_id = #{map.issueId}</if>
+        <if test="map.taskId!= null "> and oit.task_id = #{map.taskId}</if>
+        <if test="map.userId!= null "> and oit.user_id = #{map.userId}</if>
+        <if test="map.departId!= null "> and oit.depart_id = #{map.departId}</if>
+        <if test="map.sendStatus!= null "> and oit.send_status = #{map.sendStatus}</if>
+        <if test="map.sendStatusNot!= null "> and oit.send_status != #{map.sendStatusNot}</if>
+        <if test="map.role!= null "> and oit.role = #{map.role}</if>
+
+        <if test="map.isGroupByIssueId!= null ">
+         GROUP BY oit.issue_id
+        </if>
+        ORDER BY oit.create_time
+    </select>
+
+
+</mapper>

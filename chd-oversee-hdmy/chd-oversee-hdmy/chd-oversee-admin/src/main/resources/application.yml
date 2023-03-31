@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: chd-oversee
+  profiles:
+    active: '@profile.name@'

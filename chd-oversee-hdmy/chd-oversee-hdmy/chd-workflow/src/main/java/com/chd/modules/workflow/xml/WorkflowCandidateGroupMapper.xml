@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.workflow.mapper.WorkflowCandidateGroupMapper">
+
+    <resultMap id="candidateGroupMap" type="com.chd.modules.workflow.entity.WorkflowCandidateGroup" >
+        <result column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="source" property="source" />
+        <result column="role" property="role" />
+        <result column="remark" property="remark" />
+        <result column="create_time" property="createTime" />
+        <result column="create_by" property="createBy" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_by" property="updateBy" />
+
+    </resultMap>
+
+    <select id="queryList" parameterType="com.chd.modules.workflow.entity.WorkflowCandidateGroup" resultMap="candidateGroupMap">
+        SELECT * FROM  chd_workflow_candidate_group
+        <where>
+            <if test="id != null and id !='' "> and id = #{id} </if>
+            <if test="name != null and name !='' "> and name like concat('%', #{name}, '%') </if>
+            <if test="source != null and source !='' "> and source = #{source} </if>
+            <if test="role != null and role !='' "> and role = #{role} </if>
+            <if test="remark != null and remark !='' "> and remark = #{remark} </if>
+            <if test="createTime != null"> and create_time = #{createTime} </if>
+            <if test="createBy != null and createBy !='' "> and create_by = #{createBy} </if>
+            <if test="updateTime != null"> and update_time = #{updateTime} </if>
+            <if test="updateBy != null and updateBy !='' "> and update_by = #{updateBy} </if>
+
+        </where>
+    </select>
+
+
+    <update id="updateCandidateGroupById" parameterType="com.chd.modules.workflow.entity.WorkflowCandidateGroup">
+        UPDATE chd_workflow_candidate_group
+        <set>
+            <if test="name != null and name !='' "> name = #{name}, </if>
+            <if test="source != null and source !='' "> source = #{source}, </if>
+            <if test="role != null and role !='' "> role = #{role}, </if>
+            <if test="remark != null and remark !='' "> remark = #{remark}, </if>
+            <if test="updateBy != null and updateBy !='' "> update_by = #{updateBy}, </if>
+            update_time =now()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="findById" parameterType="String"  resultMap="candidateGroupMap">
+        SELECT * FROM chd_workflow_candidate_group WHERE id = #{id}
+    </select>
+
+
+    <delete id="batchDeleteByIds" parameterType="list">
+        DELETE FROM chd_workflow_candidate_group WHERE id in
+        <foreach collection="list" item="id" separator="," open="(" close=")" >
+            #{id}
+        </foreach>
+    </delete>
+
+
+</mapper>

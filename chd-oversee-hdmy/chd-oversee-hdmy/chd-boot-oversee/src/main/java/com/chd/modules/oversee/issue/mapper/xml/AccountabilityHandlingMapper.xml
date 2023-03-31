@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.oversee.issue.mapper.AccountabilityHandlingMapper">
+
+    <select id="selectCount" parameterType="map" resultType="java.lang.Integer">
+        SELECT count(0)
+        FROM accountability_handling ah
+        LEFT JOIN oversee_issue oi ON ah.issue_id = oi.id
+        LEFT JOIN my_org mo ON mo.org_id = ah.org_id
+
+        WHERE oi.data_type = 1 AND ah.data_type = 1
+        <if test="map.id!= null "> and ah.id = #{map.id}</if>
+        <if test="map.responsibleDepartmentOrgId!= null "> and ah.org_id = #{map.responsibleDepartmentOrgId}</if>
+        <if test="map.responsibleDepartmentOrgName!= null "> and mo.org_name like concat('%', #{map.responsibleDepartmentOrgName}, '%')</if>
+        <if test="map.issueId!= null "> and oi.id = #{map.issueId}</if>
+        <if test="map.num!= null "> and oi.num LIKE #{map.num}</if>
+        <if test="map.title!= null "> and oi.title LIKE #{map.title}</if>
+        <if test="map.subtitle!= null "> and oi.subtitle LIKE #{map.subtitle}</if>
+        <if test="map.submitState!= null "> and oi.submit_state = #{map.submitState}</if>
+        <if test="map.approvalBody!= null "> and oi.approval_body = #{map.approvalBody}</if>
+        <if test="map.source!= null "> and oi.source = #{map.source}</if>
+        <if test="map.isCompanyLeadershipReview!= null "> and oi.is_company_leadership_review = #{map.isCompanyLeadershipReview}</if>
+        <if test="map.headquartersLeadDepartmentOrgId!= null "> and oi.headquarters_lead_department_org_id = #{map.headquartersLeadDepartmentOrgId}</if>
+        <if test="map.headquartersLeadDepartmentManagerUserId!= null "> and oi.headquarters_lead_department_manager_user_id = #{map.headquartersLeadDepartmentManagerUserId}</if>
+        <if test="map.responsibleUnitOrgId!= null "> and oi.responsible_unit_org_id = #{map.responsibleUnitOrgId}</if>
+        <if test="map.responsibleLeadDepartmentOrgId!= null "> and oi.responsible_lead_department_org_id = #{map.responsibleLeadDepartmentOrgId}</if>
+        <if test="map.is_supervise!= null "> and oi.is_supervise = #{map.is_supervise}</if>
+        <if test="map.supervisorOrgIds!= null "> and oi.supervisor_org_ids = #{map.supervisorOrgIds}</if>
+        <if test="map.supervisorOrgId!= null "> and FIND_IN_SET(#{map.supervisorOrgId},oi.supervisor_org_ids)</if>
+        <if test="map.supervisorManagerUserId!= null "> and oi.supervisor_manager_user_id = #{map.supervisorManagerUserId}</if>
+        <if test="map.reportTime!= null "> and oi.report_time = #{map.reportTime}</if>
+        <if test="map.reportUserId!= null "> and oi.report_user_id = #{map.reportUserId}</if>
+        <if test="map.checkTime!= null "> and oi.check_time = #{map.checkTime}</if>
+        <if test="map.issueCategoryId!= null "> and oi.issue_category_id = #{map.issueCategoryId}</if>
+        <if test="map.issueSubcategoryId!= null "> and oi.issue_subcategory_id = #{map.issueSubcategoryId}</if>
+        <if test="map.severity!= null "> and oi.severity = #{map.severity}</if>
+        <if test="map.isSign!= null "> and oi.is_sign = #{map.isSign}</if>
+        <if test="map.isSupervise!= null "> and oi.is_supervise = #{map.isSupervise}</if>
+        <if test="map.completedTimeout != null and map.completedTimeout==1 "> <![CDATA[ and oi.expect_time is not null and oi.completed_time is not null and oi.completed_time<=oi.expect_time ]]> </if>
+        <if test="map.completedTimeout != null and map.completedTimeout==2 "> <![CDATA[ and oi.expect_time is not null and oi.completed_time is not null and oi.completed_time > oi.expect_time ]]> </if>
+
+    </select>
+
+</mapper>

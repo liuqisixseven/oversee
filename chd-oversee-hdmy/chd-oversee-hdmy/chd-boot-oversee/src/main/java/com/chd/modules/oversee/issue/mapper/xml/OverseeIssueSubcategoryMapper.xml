@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.oversee.issue.mapper.OverseeIssueSubcategoryMapper">
+
+    <select id="selectOverseeIssueSubcategoryPageVo" parameterType="map" resultType="com.chd.modules.oversee.issue.entity.OverseeIssueSubcategory">
+        SELECT ois.* ,
+        (SELECT name FROM oversee_issue_category oic WHERE oic.id = ois.issue_category_id) issueCategoryName,
+        (SELECT realname FROM sys_user su WHERE su.id = ois.create_user_id) createUserRealName,
+        (SELECT realname FROM sys_user su WHERE su.id = ois.update_user_id) updateUserRealName
+        FROM oversee_issue_subcategory ois
+        WHERE ois.data_type = 1
+        <if test="map.name!= null "> and ois.name LIKE #{map.name}</if>
+        <if test="map.issueCategoryId!= null and map.issueCategoryId != '0'.toString()"> and ois.issue_category_id = #{map.issueCategoryId}</if>
+        ORDER BY ois.sort
+    </select>
+
+    <select id="selectOverseeIssueSubcategoryList" parameterType="map" resultType="com.chd.modules.oversee.issue.entity.OverseeIssueSubcategory">
+        SELECT ois.*
+        FROM oversee_issue_subcategory ois
+        WHERE ois.data_type = 1
+        <if test="map.name!= null "> and ois.name LIKE #{map.name}</if>
+        <if test="map.issueCategoryId!= null and map.issueCategoryId != '0'.toString()"> and ois.issue_category_id = #{map.issueCategoryId}</if>
+        ORDER BY ois.sort
+    </select>
+
+
+
+</mapper>

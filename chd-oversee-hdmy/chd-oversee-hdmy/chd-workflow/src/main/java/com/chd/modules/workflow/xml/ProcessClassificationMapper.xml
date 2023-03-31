@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.workflow.mapper.ProcessClassificationMapper">
+
+    <select id="selectProcessClassificationPageVo" parameterType="map" resultType="com.chd.modules.workflow.entity.ProcessClassification">
+        SELECT pc.*
+        ,(SELECT realname FROM sys_user su WHERE su.id = pc.create_user_id) createUserRealName
+        ,(SELECT realname FROM sys_user su WHERE su.id = pc.update_user_id) updateUserRealName
+        FROM process_classification pc
+        WHERE pc.data_type = 1
+        <if test="map.id!= null "> and pc.id = #{map.id}</if>
+        <if test="map.name!= null "> and pc.name LIKE #{map.name}</if>
+        <if test="map.value!= null "> and pc.value LIKE #{map.value}</if>
+        <if test="map.type!= null "> and pc.type = #{map.type}</if>
+        <if test="map.subcategory!= null "> and oi.subcategory LIKE #{map.subcategory}</if>
+        ORDER BY pc.sort
+    </select>
+
+    <select id="selectProcessClassificationList" parameterType="map" resultType="com.chd.modules.workflow.entity.ProcessClassification">
+        SELECT pc.*
+        ,(SELECT realname FROM sys_user su WHERE su.id = pc.create_user_id) createUserRealName
+        ,(SELECT realname FROM sys_user su WHERE su.id = pc.update_user_id) updateUserRealName
+        FROM process_classification pc
+        WHERE pc.data_type = 1
+        <if test="map.id!= null "> and pc.id = #{map.id}</if>
+        <if test="map.name!= null "> and pc.name LIKE #{map.name}</if>
+        <if test="map.value!= null "> and pc.value LIKE #{map.value}</if>
+        <if test="map.type!= null "> and pc.type = #{map.type}</if>
+        <if test="map.subcategory!= null "> and oi.subcategory LIKE #{map.subcategory}</if>
+        ORDER BY pc.sort
+    </select>
+
+</mapper>

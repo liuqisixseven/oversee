@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.oversee.hdmy.mapper.MyOrgSettingsMapper">
+
+    <select id="selectMyOrgSettingsList" parameterType="map" resultType="com.chd.modules.oversee.hdmy.entity.MyOrgSettings">
+        SELECT mos.*,mo.org_name orgName, mo.org_short_name orgShortName
+        FROM my_org_settings mos
+        left join my_org mo on mo.org_id = mos.org_id
+        WHERE 1=1
+        <if test="map!=null">
+            <if test="map.idArray != null">
+                and mos.org_id in
+                <foreach collection="map.idArray" item="id" separator="," open="(" close=")" >
+                    #{id}
+                </foreach>
+            </if>
+        </if>
+        order by mos.sort
+    </select>
+
+    <select id="selectMyOrgSettingsPageVo" parameterType="map" resultType="com.chd.modules.oversee.hdmy.entity.MyOrgSettings">
+        SELECT mos.*,mo.org_name orgName, mo.org_short_name orgShortName
+        FROM my_org_settings mos
+        left join my_org mo on mo.org_id = mos.org_id
+        WHERE 1=1
+        <if test="map!=null">
+            <if test="map.idArray != null">
+                and mos.org_id in
+                <foreach collection="map.idArray" item="id" separator="," open="(" close=")" >
+                    #{id}
+                </foreach>
+            </if>
+        </if>
+        order by mos.sort
+    </select>
+
+</mapper>

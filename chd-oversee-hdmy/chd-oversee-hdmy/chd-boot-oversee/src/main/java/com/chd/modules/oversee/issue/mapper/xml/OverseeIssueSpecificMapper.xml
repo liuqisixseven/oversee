@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.oversee.issue.mapper.OverseeIssueSpecificMapper">
+
+    <resultMap id="overseeIssueSpecificMap" type="com.chd.modules.oversee.issue.entity.OverseeIssueSpecific" >
+        <result column="id" property="id" />
+        <result column="issue_id" property="issueId" />
+        <result column="user_id" property="userId" />
+        <result column="org_id" property="orgId" />
+        <result column="issues_rectification_measure_id" property="issuesRectificationMeasureId" />
+        <result column="specific_type" property="specificType" />
+        <result column="content" property="content" typeHandler="com.chd.common.handler.BlobTypeHandler"/>
+        <result column="expect_correct_time" property="expectCorrectTime" />
+        <result column="files" property="files" />
+        <result column="create_by" property="createBy" />
+        <result column="create_time" property="createTime" />
+        <result column="update_by" property="updateBy" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.chd.modules.oversee.issue.entity.OverseeIssueSpecific"   keyProperty="id"  useGeneratedKeys="true"  >
+        INSERT INTO oversee_issue_specific (  issue_id, user_id, org_id, issues_rectification_measure_id, specific_type, content, expect_correct_time, files,create_by, create_time, update_by, update_time ) VALUES
+            (#{issueId} ,#{userId} ,#{orgId} ,${issuesRectificationMeasureId}, #{specificType}, #{content,typeHandler=com.chd.common.handler.BlobTypeHandler},#{expectCorrectTime} ,#{files} ,#{createBy} ,#{createTime} ,#{updateBy} ,#{updateTime} )
+    </insert>
+
+    <select id="queryList" parameterType="com.chd.modules.oversee.issue.entity.OverseeIssueSpecific" resultMap="overseeIssueSpecificMap">
+        SELECT * FROM  oversee_issue_specific
+        <where>
+            <if test="id != null"> and id = #{id} </if>
+            <if test="issueId != null"> and issue_id = #{issueId} </if>
+            <if test="userId != null and userId !='' "> and user_id = #{userId} </if>
+            <if test="issuesRectificationMeasureId != null and issuesRectificationMeasureId !='' "> and issues_rectification_measure_id = #{issuesRectificationMeasureId} </if>
+            <if test="orgId != null and orgId !='' "> and org_id = #{orgId} </if>
+            <if test="orgIdList != null and orgIdList !='' ">
+                 and org_id in
+                 <foreach collection="orgIdList" item="orgId" separator="," open="(" close=")" >
+                    #{orgId}
+                 </foreach>
+            </if>
+            <if test="specificType != null"> and specific_type = #{specificType} </if>
+            <if test="content != null and content !='' "> and content = #{content,typeHandler=com.chd.common.handler.BlobTypeHandler} </if>
+            <if test="createBy != null and createBy !='' "> and create_by = #{createBy} </if>
+            <if test="createTime != null"> and create_time = #{createTime} </if>
+            <if test="updateBy != null and updateBy !='' "> and update_by = #{updateBy} </if>
+            <if test="updateTime != null"> and update_time = #{updateTime} </if>
+        </where>
+    </select>
+
+
+    <update id="updateById" parameterType="com.chd.modules.oversee.issue.entity.OverseeIssueSpecific">
+        UPDATE oversee_issue_specific
+        <set>
+            <if test="issueId != null"> ,issue_id = #{issueId} </if>
+            <if test="userId != null and userId !='' "> ,user_id = #{userId} </if>
+            <if test="orgId != null and orgId !='' "> ,org_id = #{orgId} </if>
+            <if test="specificType != null"> ,specific_type = #{specificType} </if>
+            <if test="content != null and content !='' "> ,content = #{content,typeHandler=com.chd.common.handler.BlobTypeHandler} </if>
+            <if test="expectCorrectTime != null">, expect_correct_time = #{expectCorrectTime} </if>
+            <if test="files != null and files !='' "> ,files = #{files} </if>
+            <if test="updateBy != null and updateBy !='' "> ,update_by = #{updateBy} </if>
+            <if test="updateTime != null"> ,update_time = #{updateTime} </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <delete id="deleteById" parameterType="Long">
+        DELETE FROM oversee_issue_specific WHERE id = #{id}
+    </delete>
+
+    <select id="findById" parameterType="Long" resultMap="overseeIssueSpecificMap">
+        SELECT * FROM oversee_issue_specific WHERE id = #{id}
+    </select>
+
+    <select id="findByIdList" parameterType="list" resultMap="overseeIssueSpecificMap">
+        SELECT * FROM oversee_issue_specific WHERE id in
+        <foreach collection="list" item="id" separator="," open="(" close=")" >
+            #{id}
+        </foreach>
+    </select>
+
+    <delete id="deleteBatchById" parameterType="list">
+        DELETE FROM oversee_issue_specific WHERE id in
+        <foreach collection="list" item="id" separator="," open="(" close=")" >
+            #{id}
+        </foreach>
+    </delete>
+
+
+</mapper>

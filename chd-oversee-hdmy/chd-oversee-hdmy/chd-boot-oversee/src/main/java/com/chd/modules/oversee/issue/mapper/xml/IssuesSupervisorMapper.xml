@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.oversee.issue.mapper.IssuesSupervisorMapper">
+
+    <select id="selectIssuesSupervisorList" parameterType="map" resultType="com.chd.modules.oversee.issue.entity.IssuesSupervisor">
+        SELECT iss.*,IFNULL(mo.org_short_name,mo.org_name) departName
+        FROM issues_supervisor iss
+        LEFT JOIN my_org mo ON mo.org_id = iss.supervisor_org_id
+        WHERE iss.data_type = 1
+        <if test="map.issueId!= null "> and iss.issue_id = #{map.issueId}</if>
+        <if test="map.issuesProcessType!= null "> and iss.issues_process_type = #{map.issuesProcessType}</if>
+        <if test="map.supervisorOrgId!= null "> and iss.supervisor_org_id = #{map.supervisorOrgId}</if>
+        <if test="map.manageUserId!= null "> and iss.manage_user_id = #{map.manageUserId}</if>
+        <if test="map.supervisorUserId!= null "> and iss.supervisor_user_id = #{map.supervisorUserId}</if>
+        <if test="map.userId!= null "> and iss.user_id = #{map.userId}</if>
+        <if test="map.showType!= null "> and iss.show_type = #{map.showType}</if>
+        ORDER BY iss.create_time
+    </select>
+
+
+</mapper>

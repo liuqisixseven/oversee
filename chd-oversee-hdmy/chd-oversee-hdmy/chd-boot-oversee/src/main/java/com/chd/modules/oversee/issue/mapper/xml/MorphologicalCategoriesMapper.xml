@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.oversee.issue.mapper.MorphologicalCategoriesMapper">
+
+    <select id="selectMorphologicalCategoriesPageVo" parameterType="map" resultType="com.chd.modules.oversee.issue.entity.MorphologicalCategories">
+        SELECT oic.* ,
+               (SELECT realname FROM sys_user su WHERE su.id = oic.create_user_id) createUserRealName,
+               (SELECT realname FROM sys_user su WHERE su.id = oic.update_user_id) updateUserRealName
+        FROM morphological_categories oic
+        WHERE oic.data_type = 1
+        <if test="map.name!= null "> and oic.name LIKE #{map.name}</if>
+        ORDER BY oic.sort
+    </select>
+
+    <select id="selectMorphologicalCategoriesList" parameterType="map" resultType="com.chd.modules.oversee.issue.entity.MorphologicalCategories">
+        SELECT oic.*
+        FROM morphological_categories oic
+        WHERE oic.data_type = 1
+        <if test="map.name!= null "> and oic.name LIKE #{map.name}</if>
+        ORDER BY oic.sort
+    </select>
+
+    <select id="findByName" parameterType="string" resultType="com.chd.modules.oversee.issue.entity.MorphologicalCategories">
+        SELECT * FROM morphological_categories  WHERE name = #{name}
+    </select>
+
+
+</mapper>

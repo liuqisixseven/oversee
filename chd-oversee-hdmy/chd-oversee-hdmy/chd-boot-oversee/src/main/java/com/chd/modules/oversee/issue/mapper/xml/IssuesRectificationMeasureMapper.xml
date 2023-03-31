@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.oversee.issue.mapper.IssuesRectificationMeasureMapper">
+
+    <select id="selectIssuesRectificationMeasureList" parameterType="map" resultType="com.chd.modules.oversee.issue.entity.IssuesRectificationMeasure">
+        SELECT irm.*,su.realname updateBy,IFNULL(mo.org_short_name,mo.org_name) departName
+        FROM issues_rectification_measure irm
+        left join sys_user su ON irm.update_user_id = su.id
+        left join my_org mo ON irm.org_id = mo.org_id
+        WHERE irm.data_type = 1
+        <if test="map.taskId!= null "> and irm.task_id = #{map.taskId}</if>
+        <if test="map.issueId!= null "> and irm.issue_id = #{map.issueId}</if>
+        <if test="map.issuesAllocationId!= null "> and irm.issues_allocation_id = #{map.issuesAllocationId}</if>
+        <if test="map.orgId!= null "> and irm.org_id = #{map.orgId}</if>
+        <if test="map.orgIdList != null and map.orgIds !='' ">
+            and irm.org_id in
+            <foreach collection="map.orgIdList" item="orgId" separator="," open="(" close=")" >
+                #{orgId}
+            </foreach>
+        </if>
+        <if test="map.createUserId!= null "> and irm.create_user_id = #{map.createUserId}</if>
+        <if test="map.updateUserId!= null "> and irm.update_user_id = #{map.updateUserId}</if>
+        ORDER BY irm.create_time desc
+    </select>
+
+<!--    limit 1  不能limit -->
+
+</mapper>

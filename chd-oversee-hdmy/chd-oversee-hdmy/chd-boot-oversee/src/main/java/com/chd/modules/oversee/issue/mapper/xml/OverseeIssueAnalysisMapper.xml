@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.oversee.issue.mapper.OverseeIssueAnalysisMapper">
+
+    <resultMap id="analysisMap" type="com.chd.modules.oversee.issue.entity.IssueAnalysisInfoVo" >
+        <result column="total" property="total" />
+        <result column="completed" property="completed" />
+    </resultMap>
+
+    <resultMap id="analysisItemMap" type="com.chd.modules.oversee.issue.entity.IssueAnalysisItemVo" >
+        <result column="name" property="name" />
+        <result column="sub_name" property="subName" />
+        <result column="value" property="value" />
+        <result column="completeCount" property="completeCount" />
+        <result column="undoneCount" property="undoneCount" />
+    </resultMap>
+
+
+
+    <select id="issueBaseInfo" parameterType="com.chd.modules.oversee.issue.entity.IssueAnalysisQueryVo" resultMap="analysisMap">
+        select
+(select count(*) from oversee_issue t where t.data_type = 1 AND <![CDATA[t.submit_state >0]]>
+<if test="userId!=null and userId !=''"> and t.create_user_id=#{userId} </if>
+<if test="startTime!=null "><![CDATA[ and t.create_time >=#{startTime} ]]></if>
+<if test="endTime!=null "><![CDATA[ and t.create_time <=>#{endTime} ]]></if>
+                                      ) as total,
+(SELECT count(*) as value from oversee_issue t where t.data_type = 1 AND t.submit_state =2
+        <if test="userId!=null and userId !=''"> and t.create_user_id=#{userId} </if>
+        <if test="startTime!=null "><![CDATA[ and t.create_time >=#{startTime} ]]></if>
+        <if test="endTime!=null "><![CDATA[ and t.create_time <=>#{endTime} ]]></if>
+) as completed
+    </select>
+
+    <select id="issueSource" parameterType="com.chd.modules.oversee.issue.entity.IssueAnalysisQueryVo" resultMap="analysisItemMap">
+        select t2.item_text as name,t2.item_value,count(DISTINCT t3.id) as value
+        ,SUM(IF(t3.submit_state=2,1,0)) completeCount
+        ,SUM(IF(t3.submit_state=1,1,0)) undoneCount
+        from sys_dict t1
+        left join sys_dict_item t2 on t1.id=t2.dict_id
+        left join oversee_issue t3 on t3.source =CAST(t2.item_value as SIGNED)
+        where t1.dict_code='issue_source' AND t3.data_type = 1
+        <if test="state==null"><![CDATA[ and t3.submit_state >0 ]]></if>
+        <if test="state!=null and state != 100"><![CDATA[ and t3.submit_state =#{state} ]]></if>
+        <if test="userId!=null and userId !=''"> and t3.create_user_id=#{userId} </if>
+        <if test="startTime!=null "><![CDATA[ and t3.create_time >=#{startTime} ]]></if>
+        <if test="endTime!=null "><![CDATA[ and t3.create_time <=>#{endTime} ]]></if>
+        group by t2.item_value
+    </select>
+
+    <select id="issueCategory" parameterType="com.chd.modules.oversee.issue.entity.IssueAnalysisQueryVo" resultMap="analysisItemMap">
+        select t1.name ,t2.name as sub_name,t2.id,count(DISTINCT t3.id) as value
+        from oversee_issue_category t1
+        left join oversee_issue_subcategory t2 on t1.id =t2.issue_category_id
+        left join oversee_issue t3 on t3.issue_category_id =t1.id and t3.issue_subcategory_id =t2.id
+        <where>
+            t1.data_type = 1 AND t2.data_type = 1 AND t3.data_type = 1
+            <if test="state==null"><![CDATA[ and t3.submit_state >0 ]]></if>
+            <if test="state!=null and state != 100"><![CDATA[ and t3.submit_state =#{state} ]]></if>
+            <if test="userId!=null and userId !=''"> and t3.create_user_id=#{userId} </if>
+            <if test="startTime!=null "><![CDATA[ and t3.create_time >=#{startTime} ]]></if>
+            <if test="endTime!=null "><![CDATA[ and t3.create_time <=>#{endTime} ]]></if>
+        </where>
+        group by t2.id order by t1.sort ,t2.sort
+    </select>
+
+
+    <select id="issueCheckTime" parameterType="com.chd.modules.oversee.issue.entity.IssueAnalysisQueryVo" resultMap="analysisItemMap">
+        select
+        <if test="dateType==1">
+           DATE_FORMAT( t3.check_time,'%Y-%m-%d')
+        </if>
+        <if test="dateType==2">
+         DATE_FORMAT( t3.check_time,'%Y-%m')
+        </if>
+        <if test="dateType==3">
+            DATE_FORMAT( t3.check_time ,'%Y')
+        </if>
+         as name, count(*) value from oversee_issue t3
+        where t3.check_time is not null AND t3.data_type = 1
+        <if test="state==null"><![CDATA[ and t3.submit_state >0 ]]></if>
+        <if test="state!=null and state != 100"><![CDATA[ and t3.submit_state =#{state} ]]></if>
+        <if test="userId!=null and userId !=''"> and t3.create_user_id=#{userId} </if>
+        <if test="startTime!=null "><![CDATA[ and t3.create_time >=#{startTime} ]]></if>
+        <if test="endTime!=null "><![CDATA[ and t3.create_time <=>#{endTime} ]]></if>
+        group by name
+        order by name
+    </select>
+
+    <select id="issueCompletedTime" parameterType="com.chd.modules.oversee.issue.entity.IssueAnalysisQueryVo" resultMap="analysisItemMap">
+        select
+        <if test="dateType==1">
+            DATE_FORMAT( t3.completed_time,'%Y-%m-%d')
+        </if>
+        <if test="dateType==2">
+            DATE_FORMAT( t3.completed_time,'%Y-%m')
+        </if>
+        <if test="dateType==3">
+            DATE_FORMAT( t3.completed_time ,'%Y')
+        </if>
+        as name, count(*) value from oversee_issue t3
+        where t3.completed_time is not null AND t3.data_type = 1
+        <if test="state==null"><![CDATA[ and t3.submit_state >0 ]]></if>
+        <if test="state!=null and state != 100"><![CDATA[ and t3.submit_state =#{state} ]]></if>
+        <if test="userId!=null and userId !=''"> and t3.create_user_id=#{userId} </if>
+        <if test="startTime!=null "><![CDATA[ and t3.create_time >=#{startTime} ]]></if>
+        <if test="endTime!=null "><![CDATA[ and t3.create_time <=>#{endTime} ]]></if>
+        group by name
+        order by name
+    </select>
+
+    <select id="issueCreateTime" parameterType="com.chd.modules.oversee.issue.entity.IssueAnalysisQueryVo" resultMap="analysisItemMap">
+        select
+        <if test="dateType==1">
+            DATE_FORMAT( t3.create_time,'%Y-%m-%d')
+        </if>
+        <if test="dateType==2">
+            DATE_FORMAT( t3.create_time,'%Y-%m')
+        </if>
+        <if test="dateType==3">
+            DATE_FORMAT( t3.create_time ,'%Y')
+        </if>
+        as name, count(*) value from oversee_issue t3
+        where t3.create_time is not null AND t3.data_type = 1
+        <if test="state==null"><![CDATA[ and t3.submit_state >0 ]]></if>
+        <if test="state!=null and state != 100"><![CDATA[ and t3.submit_state =#{state} ]]></if>
+        <if test="userId!=null and userId !=''"> and t3.create_user_id=#{userId} </if>
+        <if test="startTime!=null "><![CDATA[ and t3.create_time >=#{startTime} ]]></if>
+        <if test="endTime!=null "><![CDATA[ and t3.create_time <=>#{endTime} ]]></if>
+        group by name
+        order by name
+    </select>
+
+    <select id="issueReportTime" parameterType="com.chd.modules.oversee.issue.entity.IssueAnalysisQueryVo" resultMap="analysisItemMap">
+        select
+        <if test="dateType==1">
+            DATE_FORMAT( t3.report_time,'%Y-%m-%d')
+        </if>
+        <if test="dateType==2">
+            DATE_FORMAT( t3.report_time,'%Y-%m')
+        </if>
+        <if test="dateType==3">
+            DATE_FORMAT( t3.report_time ,'%Y')
+        </if>
+        as name, count(*) value from oversee_issue t3
+        where t3.report_time is not null AND t3.data_type = 1
+        <if test="state==null"><![CDATA[ and t3.submit_state >0 ]]></if>
+        <if test="state!=null and state != 100"><![CDATA[ and t3.submit_state =#{state} ]]></if>
+        <if test="userId!=null and userId !=''"> and t3.create_user_id=#{userId} </if>
+        <if test="startTime!=null "><![CDATA[ and t3.create_time >=#{startTime} ]]></if>
+        <if test="endTime!=null "><![CDATA[ and t3.create_time <=>#{endTime} ]]></if>
+        group by name
+        order by name
+    </select>
+
+    <select id="responsibleUnit" parameterType="com.chd.modules.oversee.issue.entity.IssueAnalysisQueryVo" resultMap="analysisItemMap">
+        select
+        (select GROUP_CONCAT(tb1.org_name order by tb1.`org_id`  SEPARATOR ';') as name
+        from my_org tb1 where find_in_set(tb1.org_id,t1.responsible_unit_org_id)) as name,
+        count(*) as value from oversee_issue t1
+        where t1.responsible_unit_org_id is not null AND t1.data_type = 1
+        <if test="state==null"><![CDATA[ and t1.submit_state >0 ]]></if>
+        <if test="state!=null and state != 100"><![CDATA[ and t1.submit_state =#{state} ]]></if>
+        <if test="userId!=null and userId !=''"> and t1.create_user_id=#{userId} </if>
+        <if test="startTime!=null "><![CDATA[ and t1.create_time >=#{startTime} ]]></if>
+        <if test="endTime!=null "><![CDATA[ and t1.create_time <=>#{endTime} ]]></if>
+        group by name
+        order by name
+    </select>
+
+    <select id="supervisorOrg" parameterType="com.chd.modules.oversee.issue.entity.IssueAnalysisQueryVo" resultMap="analysisItemMap">
+        select
+        (select GROUP_CONCAT(tb1.org_name order by tb1.`org_id`  SEPARATOR ';') as name
+        from my_org tb1 where find_in_set(tb1.org_id,t1.supervisor_org_ids)) as name,
+        count(*) as value from oversee_issue t1
+        where t1.supervisor_org_ids is not null AND t1.data_type = 1
+        <if test="state==null"><![CDATA[ and t1.submit_state >0 ]]></if>
+        <if test="state!=null and state != 100"><![CDATA[ and t1.submit_state =#{state} ]]></if>
+        <if test="userId!=null and userId !=''"> and t1.create_user_id=#{userId} </if>
+        <if test="startTime!=null "><![CDATA[ and t1.create_time >=#{startTime} ]]></if>
+        <if test="endTime!=null "><![CDATA[ and t1.create_time <=>#{endTime} ]]></if>
+        group by name
+        order by name
+    </select>
+
+    <select id="issueSubmitState" parameterType="com.chd.modules.oversee.issue.entity.IssueAnalysisQueryVo" resultMap="analysisItemMap">
+        select t2.item_text as name,t2.item_value,count(DISTINCT t3.id) as value  from sys_dict t1
+        left join sys_dict_item t2 on t1.id=t2.dict_id
+        left join oversee_issue t3 on t3.submit_state =CAST(t2.item_value as SIGNED)
+        where t1.dict_code='issue_submit_state' AND t3.data_type = 1
+        <if test="state==null"><![CDATA[ and t3.submit_state >-2 ]]></if>
+        <if test="state!=null and state != 100"><![CDATA[ and t3.submit_state =#{state} ]]></if>
+        <if test="userId!=null and userId !=''"> and t3.create_user_id=#{userId} </if>
+        <if test="startTime!=null "><![CDATA[ and t3.create_time >=#{startTime} ]]></if>
+        <if test="endTime!=null "><![CDATA[ and t3.create_time <=>#{endTime} ]]></if>
+        group by t2.item_value
+    </select>
+
+    <select id="onlyCategory" parameterType="com.chd.modules.oversee.issue.entity.IssueAnalysisQueryVo" resultMap="analysisItemMap">
+        select t1.name ,count(DISTINCT t3.id) as value
+        from oversee_issue_category t1
+        left join oversee_issue t3 on t3.issue_category_id =t1.id
+        where t3.data_type = 1 AND t1.data_type = 1 AND <![CDATA[ t3.submit_state >0 ]]>
+        <if test="userId!=null and userId !=''"> and t3.create_user_id=#{userId} </if>
+        <if test="startTime!=null "><![CDATA[ and t3.create_time >=#{startTime} ]]></if>
+        <if test="endTime!=null "><![CDATA[ and t3.create_time <=>#{endTime} ]]></if>
+        group by t1.id order by t1.sort
+    </select>
+
+    <select id="overdueSituation" parameterType="com.chd.modules.oversee.issue.entity.IssueAnalysisQueryVo" resultMap="analysisItemMap">
+        select count(0) as value
+        from oversee_issue oi
+        where oi.data_type = 1 AND oi.submit_state = 1
+        <if test="userId!=null and userId !=''"> and oi.create_user_id=#{userId} </if>
+        <if test="expectTimeGt!=null"> and oi.expect_time &gt;= #{expectTimeGt} </if>
+        <if test="expectTimeLt!=null"> and oi.expect_time &lt;= #{expectTimeLt} </if>
+    </select>
+
+</mapper>

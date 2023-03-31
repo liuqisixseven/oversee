@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.oversee.issue.mapper.OverseeIssueFileMapper">
+
+    <resultMap id="overseeIssueFileMap" type="OverseeIssueFile" >
+        <result column="id" property="id" />
+        <result column="issue_id" property="issueId" />
+        <result column="user_id" property="userId" />
+        <result column="specific_type" property="specificType" />
+        <result column="task_id" property="taskId" />
+        <result column="files" property="files" />
+        <result column="create_by" property="createBy" />
+        <result column="create_time" property="createTime" />
+        <result column="update_by" property="updateBy" />
+        <result column="update_time" property="updateTime" />
+        <result column="data_type" property="dataType" />
+    </resultMap>
+
+<!--    <resultMap id="overseeIssueFilesMap" type="OverseeIssueFiles" >-->
+<!--        <result column="id" property="id" />-->
+<!--        <result column="issue_id" property="issueId" />-->
+<!--        <result column="user_id" property="userId" />-->
+<!--        <result column="specific_type" property="specificType" />-->
+<!--        <result column="task_id" property="taskId" />-->
+<!--        <result column="files" property="files" />-->
+<!--        <result column="create_by" property="createBy" />-->
+<!--        <result column="create_time" property="createTime" />-->
+<!--        <result column="update_by" property="updateBy" />-->
+<!--        <result column="update_time" property="updateTime" />-->
+<!--        <result column="data_type" property="dataType" />-->
+<!--        <result column="url" property="url" />-->
+<!--        <result column="file_name" property="fileName" />-->
+<!--        <result column="relative_path" property="relativePath" />-->
+<!--    </resultMap>-->
+
+    <insert id="insert" parameterType="OverseeIssueFile" keyProperty="id"  useGeneratedKeys="true"  >
+        INSERT INTO oversee_issue_file
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="issueId != null">issue_id,</if>
+            <if test="userId != null and userId !='' ">user_id,</if>
+            <if test="specificType != null">specific_type,</if>
+            <if test="taskId != null and taskId !='' ">task_id,</if>
+            <if test="files != null and files !='' ">files,</if>
+            <if test="createBy != null and createBy !='' ">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null and updateBy !='' ">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="dataType != null">data_type,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="issueId != null">#{issueId},</if>
+            <if test="userId != null and userId !='' ">#{userId},</if>
+            <if test="specificType != null">#{specificType},</if>
+            <if test="taskId != null and taskId !='' ">#{taskId},</if>
+            <if test="files != null and files !='' ">#{files},</if>
+            <if test="createBy != null and createBy !='' ">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null and updateBy !='' ">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="dataType != null">#{dataType},</if>
+        </trim>
+    </insert>
+
+    <select id="queryList" parameterType="OverseeIssueFile" resultMap="overseeIssueFileMap">
+        SELECT * FROM  oversee_issue_file
+        <where>
+            <if test="id != null"> and id = #{id} </if>
+            <if test="issueId != null"> and issue_id = #{issueId} </if>
+            <if test="userId != null and userId !='' "> and user_id = #{userId} </if>
+            <if test="specificType != null"> and specific_type = #{specificType} </if>
+            <if test="taskId != null and taskId !='' "> and task_id = #{taskId} </if>
+            <if test="files != null and files !='' "> and files = #{files} </if>
+            <if test="createBy != null and createBy !='' "> and create_by = #{createBy} </if>
+            <if test="createTime != null"> and create_time = #{createTime} </if>
+            <if test="updateBy != null and updateBy !='' "> and update_by = #{updateBy} </if>
+            <if test="updateTime != null"> and update_time = #{updateTime} </if>
+            <if test="dataType != null"> and data_type = #{dataType} </if>
+        </where>
+    </select>
+
+    <select id="selectOverseeFileList" parameterType="Long" resultType="com.chd.modules.oversee.issue.entity.OverseeIssueFiles">
+        SELECT oif.*,ofi.file_name,ofi.url,ofi.relative_path FROM  oversee_issue_file oif
+        LEFT JOIN oss_file ofi ON ofi.id = oif.files
+        where issue_id = #{issueId}
+    </select>
+
+    <select id="queryListByIssueId" parameterType="Long" resultMap="overseeIssueFileMap">
+        SELECT * FROM  oversee_issue_file where issue_id = #{issueId} order by update_time desc
+    </select>
+
+    <update id="updateById" parameterType="OverseeIssueFile">
+        UPDATE oversee_issue_file
+        <set>
+            <if test="issueId != null"> issue_id = #{issueId}, </if>
+            <if test="userId != null and userId !='' "> user_id = #{userId}, </if>
+            <if test="specificType != null"> specific_type = #{specificType}, </if>
+            <if test="taskId != null and taskId !='' "> task_id = #{taskId}, </if>
+            <if test="files != null and files !='' "> files = #{files}, </if>
+            <if test="updateBy != null and updateBy !='' "> update_by = #{updateBy}, </if>
+            <if test="updateTime != null"> update_time = #{updateTime}, </if>
+            <if test="dataType != null"> data_type = #{dataType}, </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <delete id="deleteById" parameterType="Long">
+        DELETE FROM oversee_issue_file WHERE id = #{id}
+    </delete>
+
+    <select id="findById" parameterType="Long"  resultMap="overseeIssueFileMap">
+        SELECT * FROM oversee_issue_file WHERE id = #{id}
+    </select>
+
+    <select id="findByIdList" parameterType="list"  resultMap="overseeIssueFileMap">
+        SELECT * FROM oversee_issue_file WHERE id in
+        <foreach collection="list" item="id" separator="," open="(" close=")" >
+            #{id}
+        </foreach>
+    </select>
+
+    <delete id="deleteBatchById" parameterType="list">
+        DELETE FROM oversee_issue_file WHERE id in
+        <foreach collection="list" item="id" separator="," open="(" close=")" >
+            #{id}
+        </foreach>
+    </delete>
+
+
+</mapper>

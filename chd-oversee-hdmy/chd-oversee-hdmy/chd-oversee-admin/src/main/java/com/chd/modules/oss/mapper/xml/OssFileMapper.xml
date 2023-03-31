@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chd.modules.oss.mapper.OssFileMapper">
+
+    <select id="selectOssFilePageVo" parameterType="map" resultType="com.chd.modules.oss.entity.OssFile">
+        SELECT of1.*
+        FROM oss_file of1
+        LEFT JOIN oss_file_issue ofi ON ofi.oss_file_id = of1.id
+        WHERE oic.data_type = 1
+        <if test="map.name!= null "> and oic.name LIKE #{map.name}</if>
+        ORDER BY oic.sort
+    </select>
+
+    <select id="selectOssFileList" parameterType="map" resultType="com.chd.modules.oss.entity.OssFile">
+        SELECT oic.*
+        FROM morphological_categories oic
+        WHERE oic.data_type = 1
+        <if test="map.name!= null "> and oic.name LIKE #{map.name}</if>
+        ORDER BY oic.sort
+    </select>
+
+
+
+</mapper>
